@@ -7,7 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <!-- ── CLERK SSO (v4 — full UI bundle) ──────────────────────────── -->
 <script>const CLERK_PUBLISHABLE_KEY = 'pk_test_dW5pcXVlLXJhY2Nvb24tMzQuY2xlcmsuYWNjb3VudHMuZGV2JA';</script>
-<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js" crossorigin="anonymous"></script>
+<script
+  data-clerk-publishable-key="pk_test_dW5pcXVlLXJhY2Nvb24tMzQuY2xlcmsuYWNjb3VudHMuZGV2JA"
+  src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js"
+  crossorigin="anonymous"></script>
 <!-- ──────────────────────────────────────────────────────────────── -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -3037,9 +3040,9 @@ document.addEventListener('click', (e) => {
     });
   }
 
-  // ── 2. Boot Clerk v4 (new Clerk(key) constructor) ────────────────
+  // ── 2. Boot Clerk v4 (window.Clerk is a pre-init instance on CDN) ─
   try {
-    const clerk = new window.Clerk(CLERK_PUBLISHABLE_KEY);
+    const clerk = window.Clerk;
     window.__clerk = clerk;
     await clerk.load();
 
