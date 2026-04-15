@@ -3022,9 +3022,41 @@ document.addEventListener('click', (e) => {
     return;
   }
 
-  // ── 2. Boot Clerk ────────────────────────────────────────────────
+  // ── 2. Allowed email domains ─────────────────────────────────────
+  const ALLOWED_DOMAINS = ['firstbase.com', 'appdirect.com'];
+
+  function getEmailDomain(user) {
+    const email = user?.primaryEmailAddress?.emailAddress || '';
+    return email.split('@')[1] || '';
+  }
+
+  function isDomainAllowed(user) {
+    return ALLOWED_DOMAINS.includes(getEmailDomain(user));
+  }
+
+  function showDomainError(user) {
+    signInEl.innerHTML = '';
+    const domain = getEmailDomain(user);
+    loadingEl.style.display = 'block';
+    loadingEl.style.maxWidth = '400px';
+    loadingEl.style.textAlign = 'center';
+    loadingEl.style.lineHeight = '1.7';
+    loadingEl.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
+    loadingEl.style.fontSize = '13px';
+    loadingEl.innerHTML =
+      `⛔ <strong>Access denied.</strong><br>` +
+      `<em>${domain}</em> accounts are not permitted to access this dashboard.<br>` +
+      `Please sign in with a <strong>@firstbase.com</strong> or <strong>@appdirect.com</strong> Google account.<br><br>` +
+      `<button onclick="window.__clerkInstance.signOut().then(()=>location.reload())" ` +
+      `style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 22px;` +
+      `font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">` +
+      `Sign out &amp; try again</button>`;
+  }
+
+  // ── 3. Boot Clerk ────────────────────────────────────────────────
   try {
     const clerk = new window.Clerk(CLERK_PUBLISHABLE_KEY);
+    window.__clerkInstance = clerk;
     await clerk.load();
 
     function showApp() {
@@ -3038,13 +3070,17 @@ document.addEventListener('click', (e) => {
       });
     }
 
-    // ── 3. Already signed in? ──────────────────────────────────────
+    // ── 4. Already signed in? ──────────────────────────────────────
     if (clerk.user) {
-      showApp();
+      if (isDomainAllowed(clerk.user)) {
+        showApp();
+      } else {
+        showDomainError(clerk.user);
+      }
       return;
     }
 
-    // ── 4. Show sign-in component (Google SSO) ─────────────────────
+    // ── 5. Show sign-in component (Google SSO) ─────────────────────
     loadingEl.style.display = 'none';
     clerk.mountSignIn(signInEl, {
       appearance: {
@@ -3054,13 +3090,17 @@ document.addEventListener('click', (e) => {
           socialButtonsBlockButton__google: { order: -1 }
         }
       },
-      // Restrict visible social providers to Google only
       socialButtonsVariant: 'blockButton',
     });
 
-    // ── 5. Listen for successful sign-in ──────────────────────────
+    // ── 6. Listen for successful sign-in, enforce domain ──────────
     clerk.addListener(({ user }) => {
-      if (user) showApp();
+      if (!user) return;
+      if (isDomainAllowed(user)) {
+        showApp();
+      } else {
+        showDomainError(user);
+      }
     });
 
   } catch (err) {
