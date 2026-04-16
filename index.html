@@ -1410,35 +1410,35 @@
         <div style="grid-column:5/9;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent2);padding-bottom:2px;">Box Dims (cm.)</div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">L</label>
-          <input type="number" id="np-lin" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-lin" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncDim('in','l')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">W</label>
-          <input type="number" id="np-win" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-win" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncDim('in','w')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">H</label>
-          <input type="number" id="np-hin" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-hin" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncDim('in','h')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">Wt (lbs)</label>
-          <input type="number" id="np-weight" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-weight" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncWeight('lbs')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">L</label>
-          <input type="number" id="np-lcm" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-lcm" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncDim('cm','l')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">W</label>
-          <input type="number" id="np-wcm" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-wcm" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncDim('cm','w')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">H</label>
-          <input type="number" id="np-hcm" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-hcm" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncDim('cm','h')" />
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;">Wt (kgs)</label>
-          <input type="number" id="np-weightkg" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+          <input type="number" id="np-weightkg" placeholder="0" min="0" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="syncWeight('kg')" />
         </div>
       </div>
       <div id="np-error" style="display:none;margin-top:10px;background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:7px;color:var(--warn);font-size:12px;padding:8px 12px;font-family:'DM Mono',monospace;"></div>
@@ -2516,6 +2516,28 @@ function refreshAllDataLists() {
 }
 
 function onProductSelect() {} // no-op, handled by selectProdOption now
+
+// ── PRODUCT DIMS / WEIGHT UNIT CONVERTERS ───────────────────────
+function syncDim(fromUnit, axis) {
+  const map = { l: ['np-lin','np-lcm'], w: ['np-win','np-wcm'], h: ['np-hin','np-hcm'] };
+  const [inId, cmId] = map[axis];
+  if (fromUnit === 'in') {
+    const v = parseFloat(document.getElementById(inId).value);
+    document.getElementById(cmId).value = (isNaN(v) || document.getElementById(inId).value === '') ? '' : (v * 2.54).toFixed(2);
+  } else {
+    const v = parseFloat(document.getElementById(cmId).value);
+    document.getElementById(inId).value = (isNaN(v) || document.getElementById(cmId).value === '') ? '' : (v / 2.54).toFixed(2);
+  }
+}
+function syncWeight(fromUnit) {
+  if (fromUnit === 'lbs') {
+    const v = parseFloat(document.getElementById('np-weight').value);
+    document.getElementById('np-weightkg').value = (isNaN(v) || document.getElementById('np-weight').value === '') ? '' : (v * 0.453592).toFixed(3);
+  } else {
+    const v = parseFloat(document.getElementById('np-weightkg').value);
+    document.getElementById('np-weight').value = (isNaN(v) || document.getElementById('np-weightkg').value === '') ? '' : (v / 0.453592).toFixed(3);
+  }
+}
 
 // ── ADD NEW PRODUCT ──────────────────────────────────────────────
 async function addNewProduct() {
