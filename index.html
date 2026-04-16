@@ -350,6 +350,58 @@
     display: none;
   }
 
+  /* Product row checkboxes */
+  .product-row-cb,
+  #select-all-products {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid #94a3b8;
+    border-radius: 4px;
+    background: var(--surface2);
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .product-row-cb:hover,
+  #select-all-products:hover {
+    border-color: var(--accent);
+  }
+  .product-row-cb:checked,
+  #select-all-products:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .product-row-cb:checked::after,
+  #select-all-products:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+  #select-all-products:indeterminate {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  #select-all-products:indeterminate::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 4px;
+    width: 7px;
+    height: 2px;
+    background: #fff;
+    border-radius: 1px;
+  }
+
   .section-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--border), transparent);
@@ -1462,7 +1514,7 @@
         <thead>
           <tr style="background:#f1f5f9;">
             <th rowspan="2" style="width:36px;padding:0 4px 0 12px;border-bottom:1px solid var(--border);vertical-align:bottom;">
-              <input type="checkbox" id="select-all-products" onclick="toggleSelectAll(this)" title="Select all" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);" />
+              <input type="checkbox" id="select-all-products" onclick="toggleSelectAll(this)" title="Select all" />
             </th>
             <th rowspan="2" style="text-align:left;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:bottom;">Item Name</th>
             <th rowspan="2" style="text-align:left;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:bottom;">Category</th>
@@ -2690,7 +2742,7 @@ function renderProductTable() {
     return `
     <tr data-pname="${p.name.replace(/"/g,'&quot;')}" style="border-bottom:1px solid rgba(42,42,58,0.5);transition:background 0.15s;" onmouseover="this.style.background='rgba(37,99,235,0.03)'" onmouseout="this.style.background='transparent'">
       <td style="padding:0 4px 0 12px;width:36px;text-align:center;">
-        <input type="checkbox" class="product-row-cb" ${isChecked?'checked':''} onclick="toggleProductSelection('${safeNameAttr}', this.checked)" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);" />
+        <input type="checkbox" class="product-row-cb" ${isChecked?'checked':''} onclick="toggleProductSelection('${safeNameAttr}', this.checked)" />
       </td>
       <td style="padding:9px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);max-width:260px;">${p.name}</td>
       <td style="padding:9px 10px;">
@@ -3323,13 +3375,7 @@ Could you please provide an export quote from ${originLabel} to ${destLabel} for
 
 ${itemsBlock.trim()}
 
-Please advise on shipping costs, lead time, and any applicable duties or import requirements for the destination country.
-
-Let me know if you need any additional details such as declared values, tariff codes, or recipient information.
-
-Thank you,
-[Your Name]
-Firstbase Export Services`;
+Please advise on shipping costs, lead time, and any applicable duties or import requirements for the destination country.`;
 
   document.getElementById('qr-email-body').value = body;
 }
