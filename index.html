@@ -3356,9 +3356,11 @@ function generateQuoteEmail() {
       const wt     = p.weight   ? `${p.weight} lbs` : null;
       const wtKg   = p.weightKg ? `${p.weightKg} kg` : null;
       const weight = [wt, wtKg].filter(Boolean).join(' / ');
+      const val    = p.value ? `$${parseFloat(p.value).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}` : null;
       const parts  = [];
       if (dims)   parts.push(`Dims: ${dims}`);
       if (weight) parts.push(`Weight: ${weight}`);
+      if (val)    parts.push(`Value: ${val}`);
       if (parts.length) itemsBlock += `  • ${parts.join(' | ')}\n`;
     });
     itemsBlock += '\n';
