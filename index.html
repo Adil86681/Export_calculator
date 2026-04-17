@@ -1866,45 +1866,85 @@ async function gasPost(payload) {
 let rates = { us: { currency:'USD', countries:{} }, de: { currency:'EUR', countries:{} }, de_ret: { currency:'EUR', countries:{} }, sg: { currency:'USD', countries:{} } };
 const WH_MAP = { US:'us', DE:'de', 'DE-RETURNS':'de_ret', SG:'sg' };
 
+// Rates sourced directly from Notion: https://firstbase.notion.site/Firstbase-Export-Rates-0a9fb6c1dca94a48b36da78fa7316bf5
+// Last Updated: March 12, 2026
 async function loadRates() {
-  try {
-    const text = await fetch(csvUrl(0)).then(r => r.text());
-    const rows = parseCSV(text);
-    // Reset
-    rates = { us:{currency:'USD',countries:{}}, de:{currency:'EUR',countries:{}}, de_ret:{currency:'EUR',countries:{}}, sg:{currency:'USD',countries:{}} };
-    rows.forEach(r => {
-      const whKey = WH_MAP[r['Warehouse']] || r['Warehouse'].toLowerCase();
-      if (!rates[whKey]) rates[whKey] = { currency: r['Currency']||'USD', countries:{} };
-      rates[whKey].currency = r['Currency'] || 'USD';
-      rates[whKey].countries[r['Country']] = {
-        duty:  parseFloat(r['Local Duties (%)']) || 0,
-        ior:   parseFloat(r['IOR Min Fee (USD)']) || 0,
-        fixed: parseFloat(r['Fixed Cost (USD)']) || 0,
-        transit: r['Transit Time'] || '~20 business days'
-      };
-    });
-    // Also load custom countries from Sheet and merge into all warehouses
-    const ccText = await fetch(csvUrl(customCountriesGid)).then(r => r.text()).catch(() => '');
-    if (ccText) {
-      const ccRows = parseCSV(ccText);
-      ccRows.forEach(r => {
-        if (!r['Country']) return;
-        const whKey = WH_MAP[r['Warehouse']] || 'us';
-        Object.keys(rates).forEach(wh => {
-          // Custom countries appear in all warehouses using same rates
-          if (!rates[wh].countries[r['Country']]) {
-            rates[wh].countries[r['Country']] = {
-              duty:  parseFloat(r['Local Duties (%)']) || 0,
-              ior:   parseFloat(r['IOR Min Fee (USD)']) || 0,
-              fixed: parseFloat(r['Fixed Cost (USD)']) || 0,
-              transit: r['Transit Time'] || '~20 business days'
-            };
-          }
-        });
-      });
+  const US_TRANSIT = '~20 business days';
+  rates = {
+    us: {
+      currency: 'USD',
+      countries: {
+        'Argentina':    { duty: 0.60, ior: 500, fixed: 1880, transit: US_TRANSIT },
+        'Australia':    { duty: 0.10, ior: 150, fixed: 350,  transit: US_TRANSIT },
+        'Bermuda':      { duty: 0.34, ior: 750, fixed: 2350, transit: US_TRANSIT },
+        'Bolivia':      { duty: 0.35, ior: 500, fixed: 1145, transit: US_TRANSIT },
+        'Bosnia':       { duty: 0.25, ior: 500, fixed: 1250, transit: US_TRANSIT },
+        'Brazil':       { duty: 0.98, ior: 500, fixed: 2000, transit: US_TRANSIT },
+        'Canada':       { duty: 0.15, ior: 150, fixed: 200,  transit: US_TRANSIT },
+        'Chile':        { duty: 0.28, ior: 500, fixed: 1425, transit: US_TRANSIT },
+        'Colombia':     { duty: 0.21, ior: 500, fixed: 1670, transit: US_TRANSIT },
+        'Costa Rica':   { duty: 0.14, ior: 400, fixed: 600,  transit: US_TRANSIT },
+        'Ecuador':      { duty: 0.25, ior: 500, fixed: 1250, transit: US_TRANSIT },
+        'El Salvador':  { duty: 0.14, ior: 500, fixed: 1245, transit: US_TRANSIT },
+        'Guatemala':    { duty: 0.27, ior: 500, fixed: 1260, transit: US_TRANSIT },
+        'Honduras':     { duty: 0.30, ior: 500, fixed: 1290, transit: US_TRANSIT },
+        'Hong Kong':    { duty: 0.00, ior: 500, fixed: 2275, transit: US_TRANSIT },
+        'India':        { duty: 0.28, ior: 600, fixed: 2350, transit: US_TRANSIT },
+        'Indonesia':    { duty: 0.26, ior: 500, fixed: 2350, transit: US_TRANSIT },
+        'Ireland':      { duty: 0.24, ior: 500, fixed: 350,  transit: US_TRANSIT },
+        'Israel':       { duty: 0.18, ior: 500, fixed: 2900, transit: US_TRANSIT },
+        'Japan':        { duty: 0.12, ior: 250, fixed: 250,  transit: US_TRANSIT },
+        'Jordan':       { duty: 0.41, ior: 750, fixed: 2250, transit: US_TRANSIT },
+        'Kazakhstan':   { duty: 0.18, ior: 750, fixed: 2910, transit: US_TRANSIT },
+        'Kenya':        { duty: 0.23, ior: 500, fixed: 2090, transit: US_TRANSIT },
+        'Mauritius':    { duty: 0.20, ior: 750, fixed: 1650, transit: US_TRANSIT },
+        'Mexico':       { duty: 0.18, ior: 500, fixed: 1395, transit: US_TRANSIT },
+        'Morocco':      { duty: 0.29, ior: 750, fixed: 1745, transit: US_TRANSIT },
+        'New Zealand':  { duty: 0.15, ior: 500, fixed: 2120, transit: US_TRANSIT },
+        'Nicaragua':    { duty: 0.55, ior: 750, fixed: 1850, transit: US_TRANSIT },
+        'Pakistan':     { duty: 0.88, ior: 750, fixed: 2800, transit: US_TRANSIT },
+        'Panama':       { duty: 0.21, ior: 500, fixed: 1460, transit: US_TRANSIT },
+        'Peru':         { duty: 0.30, ior: 500, fixed: 1750, transit: US_TRANSIT },
+        'Philippines':  { duty: 0.16, ior: 750, fixed: 2250, transit: US_TRANSIT },
+        'Puerto Rico':  { duty: 0.12, ior: 500, fixed: 1440, transit: US_TRANSIT },
+        'Qatar':        { duty: 0.12, ior: 750, fixed: 2950, transit: US_TRANSIT },
+        'Saudi Arabia': { duty: 0.19, ior: 750, fixed: 1980, transit: US_TRANSIT },
+        'South Africa': { duty: 0.32, ior: 750, fixed: 1800, transit: US_TRANSIT },
+        'South Korea':  { duty: 0.18, ior: 500, fixed: 675,  transit: US_TRANSIT },
+        'Sri Lanka':    { duty: 0.38, ior: 750, fixed: 2495, transit: US_TRANSIT },
+        'Switzerland':  { duty: 0.09, ior: 500, fixed: 850,  transit: US_TRANSIT },
+        'Taiwan':       { duty: 0.06, ior: 500, fixed: 750,  transit: US_TRANSIT },
+        'Thailand':     { duty: 0.09, ior: 750, fixed: 1300, transit: US_TRANSIT },
+        'Tunisia':      { duty: 0.63, ior: 750, fixed: 3890, transit: US_TRANSIT },
+        'Turkey':       { duty: 1.11, ior: 700, fixed: 2950, transit: US_TRANSIT },
+        'Uruguay':      { duty: 0.40, ior: 500, fixed: 1650, transit: US_TRANSIT },
+        'Uzbekistan':   { duty: 0.50, ior: 750, fixed: 2285, transit: US_TRANSIT }
+      }
+    },
+    sg: {
+      currency: 'USD',
+      countries: {
+        'Thailand':  { duty: 0.07, ior: 325, fixed: 300, transit: '~12 business days' },
+        'Indonesia': { duty: 0.21, ior: 250, fixed: 250, transit: '~16 business days' },
+        'Taiwan':    { duty: 0.06, ior: 400, fixed: 425, transit: '~15 business days' }
+      }
+    },
+    de: {
+      currency: 'EUR',
+      countries: {
+        'Switzerland': { duty: 0.09, ior: 50, fixed: 625, transit: '15-18 business days' },
+        'Norway':      { duty: 0.25, ior: 50, fixed: 825, transit: '15-18 business days' }
+      }
+    },
+    de_ret: {
+      currency: 'EUR',
+      countries: {
+        'Switzerland': { duty: 0.19, ior: 50, fixed: 800, transit: '15-18 business days from pickup' },
+        'Norway':      { duty: 0.19, ior: 50, fixed: 900, transit: '15-18 business days from pickup' }
+      }
     }
-    onWarehouseChange();
-  } catch(e) { console.error('loadRates error:', e); }
+  };
+  onWarehouseChange();
 }
 
 // GIDs — from Sheet tab URLs
@@ -2807,7 +2847,7 @@ const COUNTRY_RATES = {
   "India":        {duty:28, ior:600,  fixed:2350},
   "Indonesia":    {duty:26, ior:500,  fixed:2350},
   "Ireland":      {duty:24, ior:500,  fixed:350},
-  "Israel":       {duty:17, ior:300,  fixed:300},
+  "Israel":       {duty:18, ior:500,  fixed:2900},
   "Japan":        {duty:12, ior:250,  fixed:250},
   "Jordan":       {duty:41, ior:750,  fixed:2250},
   "Kazakhstan":   {duty:18, ior:750,  fixed:2910},
