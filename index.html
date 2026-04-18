@@ -1316,6 +1316,7 @@
   <!-- TAB NAVIGATION -->
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('calculator')">📦 Rate Calculator</button>
+    <button class="tab-btn" onclick="switchTab('quote')">📝 Create Quote</button>
     <button class="tab-btn" onclick="switchTab('repository')">📋 Shipment Repository</button>
     <button class="tab-btn" onclick="switchTab('products')">🗂 Product Info</button>
   </div>
@@ -1402,7 +1403,107 @@
   </div><!-- end tab-calculator -->
 
   <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- TAB 2: SHIPMENT REPOSITORY                                 -->
+  <!-- TAB 2: CREATE QUOTE                                        -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div id="tab-quote" class="tab-panel">
+
+  <div class="card" style="animation-delay:0.05s">
+    <div class="card-title">Quote Recipient</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Client / Company Name</label>
+        <input type="text" id="cq-client" placeholder="e.g. Acme Corp" oninput="calculateQuote()" />
+      </div>
+      <div class="field">
+        <label>Contact / Reference <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(optional)</span></label>
+        <input type="text" id="cq-reference" placeholder="e.g. Jane Doe — Quote Ref Q-1042" oninput="calculateQuote()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="animation-delay:0.1s">
+    <div class="card-title">Shipment Details</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Origin Warehouse</label>
+        <select id="cq-warehouse" onchange="onQuoteWarehouseChange()">
+          <option value="">— Select warehouse —</option>
+          <option value="us">🇺🇸 US (Salt Lake City)</option>
+          <option value="de">🇩🇪 Germany (EU)</option>
+          <option value="de_ret">🇩🇪 Germany - Returns</option>
+          <option value="sg">🇸🇬 Singapore</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Destination Country</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="cq-country" onchange="calculateQuote()" style="flex:1">
+            <option value="">— Select origin first —</option>
+          </select>
+          <button onclick="openAddCountry()" title="Add new destination country" style="flex-shrink:0;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:42px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='var(--accent)'">+ Add Country</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Declared Value per Unit (USD)</label>
+        <div class="input-wrap">
+          <span class="currency-prefix" id="cq-currency-prefix">$</span>
+          <input type="number" id="cq-value" min="1" max="10000" value="2000" placeholder="e.g. 2000" oninput="calculateQuote()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Quantity</label>
+        <input type="number" id="cq-quantity" min="1" value="1" placeholder="e.g. 1" oninput="calculateQuote()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="results-card" id="cq-results">
+    <div class="card-title">Quote Preview</div>
+    <div class="empty-state" id="cq-empty-state">
+      <div class="empty-icon">📝</div>
+      Select a warehouse, destination, and declared value to generate a customer quote.
+    </div>
+    <div id="cq-breakdown-content" style="display:none">
+      <div id="cq-client-summary" style="display:none;margin-bottom:20px;padding:14px 18px;background:rgba(37,99,235,0.05);border:1px solid rgba(37,99,235,0.15);border-radius:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Quote Prepared For</div>
+        <div id="cq-client-display" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text);"></div>
+        <div id="cq-reference-display" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-row"><span class="breakdown-label">Declared Value per Unit</span><span class="breakdown-value" id="cq-r-value">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">Quantity</span><span class="breakdown-value" id="cq-r-qty">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">Total Declared Value</span><span class="breakdown-value" id="cq-r-total-value">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label"><span id="cq-r-duty-label">Local Duties &amp; Tax </span><span id="cq-r-duty-pct" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)"></span></span><span class="breakdown-value highlight" id="cq-r-duty">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">IOR Minimum Fee <span id="cq-r-ior-note" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)"></span></span><span class="breakdown-value highlight" id="cq-r-ior">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">Fixed Cost (Freight & Brokerage) <span id="cq-r-fixed-note" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)"></span></span><span class="breakdown-value highlight" id="cq-r-fixed">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">Subtotal Export Charges</span><span class="breakdown-value" id="cq-r-subtotal">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">Firstbase Service & Handling (8%)</span><span class="breakdown-value highlight" id="cq-r-handling">—</span></div>
+      </div>
+      <div class="total-row"><span class="total-label">Total Quote to Customer</span><span class="total-value" id="cq-r-total">—</span></div>
+      <div class="transit-badge" id="cq-r-transit">🕐 Transit time: —</div>
+      <div id="cq-r-footnote" style="display:none;margin-top:12px;background:rgba(37,99,235,0.05);border:1px solid rgba(37,99,235,0.15);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--muted);line-height:1.6;font-family:'DM Mono',monospace;">* Returns from Switzerland and Norway are imported into the Firstbase Germany warehouse and processed through the EU warehouse lifecycle (reuse, storage, or ITAD). Only export/import service fees apply; standard return action fees do not apply.</div>
+      <div style="margin-top:16px">
+        <button id="cq-create-quote-btn" onclick="generateCreateQuotePDF()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:14px 20px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.03em;transition:background 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='var(--accent)'">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 2v3h3M6 8h4M6 10.5h4M6 5.5h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Generate Quote PDF
+        </button>
+      </div>
+      <div class="note" style="margin-top:12px">Rates are estimates and may vary based on local taxes, customs clearance, brokerage fees, and contractor costs at time of shipment. Only new, unopened laptops in original packaging qualify.</div>
+    </div>
+  </div>
+
+  <div class="card exclusions-section" style="margin-top:20px">
+    <div class="card-title">Excluded Regions</div>
+    <div class="exclusions-grid">
+      <span class="exclusion-tag">Albania</span><span class="exclusion-tag">Algeria</span><span class="exclusion-tag">Armenia</span><span class="exclusion-tag">Bangladesh</span><span class="exclusion-tag">China</span><span class="exclusion-tag">Cuba</span><span class="exclusion-tag">Iran</span><span class="exclusion-tag">Kosovo</span><span class="exclusion-tag">Kyrgyzstan</span><span class="exclusion-tag">Lebanon</span><span class="exclusion-tag">Moldova</span><span class="exclusion-tag">North Korea</span><span class="exclusion-tag">Russia</span><span class="exclusion-tag">Sudan</span><span class="exclusion-tag">Syria</span><span class="exclusion-tag">Ukraine</span><span class="exclusion-tag">Venezuela</span><span class="exclusion-tag">Vietnam</span>
+    </div>
+    <p style="margin-top:12px;font-size:12px;color:var(--muted)">This list is non-exhaustive. Additional regions may not be supported.</p>
+  </div>
+
+  </div><!-- end tab-quote -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- TAB 3: SHIPMENT REPOSITORY                                 -->
   <!-- ══════════════════════════════════════════════════════════ -->
   <div id="tab-repository" class="tab-panel">
 
@@ -1813,12 +1914,13 @@
 <script>
 // ── TAB SWITCHER ────────────────────────────────────────────────
 function switchTab(name) {
-  const tabs = ['calculator','repository','products'];
+  const tabs = ['calculator','quote','repository','products'];
   document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', tabs[i] === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'repository') initRepo();
   if (name === 'products') renderProductTable();
+  if (name === 'quote') onQuoteWarehouseChange();
 }
 
 // ── GOOGLE SHEETS CONFIG ─────────────────────────────────────────
@@ -3203,6 +3305,331 @@ function generateQuotePDF() {
   doc.text('Firstbase - An Appdirect Company  |  Export Services  |  exports@firstbase.io', pageW / 2, 292.5, { align: 'center' });
 
   const filename = `Firstbase_Export_Quote_${country.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+  doc.save(filename);
+}
+
+// ── CREATE QUOTE TAB ────────────────────────────────────────────
+function onQuoteWarehouseChange() {
+  const wh = document.getElementById('cq-warehouse').value;
+  const cs = document.getElementById('cq-country');
+  cs.innerHTML = wh && rates[wh] ? '<option value="">— Select destination —</option>' : '<option value="">— Select origin first —</option>';
+  if (wh && rates[wh]) {
+    const all = Object.keys(rates[wh].countries).sort();
+    all.forEach(c => { const o=document.createElement('option'); o.value=o.textContent=c; cs.appendChild(o); });
+  }
+  // Update declared value prefix to reflect currency
+  const currency = (wh && rates[wh]) ? rates[wh].currency : 'USD';
+  const prefixEl = document.getElementById('cq-currency-prefix');
+  if (prefixEl) prefixEl.textContent = currency === 'EUR' ? '€' : '$';
+  const valueField = document.getElementById('cq-value');
+  if (valueField) {
+    const lbl = valueField.closest('.field')?.querySelector('label');
+    if (lbl) lbl.textContent = 'Declared Value per Unit (' + (currency||'USD') + ')';
+  }
+  calculateQuote();
+}
+
+function calculateQuote() {
+  const wh      = document.getElementById('cq-warehouse').value,
+        country = document.getElementById('cq-country').value,
+        val     = parseFloat(document.getElementById('cq-value').value),
+        qty     = Math.max(1, parseInt(document.getElementById('cq-quantity').value)||1);
+  const client  = (document.getElementById('cq-client').value || '').trim();
+  const ref     = (document.getElementById('cq-reference').value || '').trim();
+  const content = document.getElementById('cq-breakdown-content');
+  const empty   = document.getElementById('cq-empty-state');
+  if (!wh||!country||isNaN(val)||val<=0){content.style.display='none';empty.style.display='block';return;}
+
+  let r = (rates[wh] && rates[wh].countries[country]) ? rates[wh].countries[country] : null;
+  if(!r){content.style.display='none';empty.style.display='block';return;}
+
+  const currency = (rates[wh] && rates[wh].currency) ? rates[wh].currency : 'USD';
+  const totalVal = val * qty;
+  const isReturns = wh === 'de_ret';
+
+  // Show $10k popup if total declared value exceeds $9999
+  if (totalVal > 9999) {
+    document.getElementById('tenk-modal').style.display='flex';
+    content.style.display='none'; empty.style.display='block';
+    return;
+  }
+
+  let duty, ior, fixed, subtotal, handling, total;
+
+  if (isReturns) {
+    duty     = totalVal * r.duty;
+    ior      = r.ior;
+    fixed    = r.fixed;
+    subtotal = duty + ior + fixed;
+    handling = subtotal * 0.08;
+    total    = subtotal + handling;
+  } else {
+    duty    = totalVal * r.duty;
+    ior     = r.ior * qty;
+    fixed   = r.fixed * qty;
+    subtotal = duty + ior + fixed;
+    handling = subtotal * 0.08;
+    total    = subtotal + handling;
+  }
+
+  // Client summary block
+  const clientSummary = document.getElementById('cq-client-summary');
+  if (client || ref) {
+    clientSummary.style.display = 'block';
+    document.getElementById('cq-client-display').textContent = client || '—';
+    document.getElementById('cq-reference-display').textContent = ref || '';
+    document.getElementById('cq-reference-display').style.display = ref ? 'block' : 'none';
+  } else {
+    clientSummary.style.display = 'none';
+  }
+
+  // Update duty row label
+  const dutyLabelEl = document.getElementById('cq-r-duty-label');
+  if (dutyLabelEl) dutyLabelEl.textContent = isReturns ? 'German Import VAT ' : 'Local Duties & Tax ';
+
+  document.getElementById('cq-r-value').textContent=fmtVal(val,currency);
+  document.getElementById('cq-r-qty').textContent=qty.toLocaleString();
+  document.getElementById('cq-r-total-value').textContent=fmtVal(totalVal,currency);
+  document.getElementById('cq-r-duty-pct').textContent='('+(r.duty*100).toFixed(0)+'% of total declared value)';
+  document.getElementById('cq-r-duty').textContent=fmt(duty,currency);
+  document.getElementById('cq-r-ior-note').textContent=(!isReturns && qty>1)?'(×'+qty+')':'';
+  document.getElementById('cq-r-ior').textContent=fmt(ior,currency);
+  document.getElementById('cq-r-fixed-note').textContent=(!isReturns && qty>1)?'(×'+qty+')':'';
+  document.getElementById('cq-r-fixed').textContent=fmt(fixed,currency);
+  document.getElementById('cq-r-subtotal').textContent=fmt(subtotal,currency);
+  document.getElementById('cq-r-handling').textContent=fmt(handling,currency);
+  document.getElementById('cq-r-total').textContent=fmt(total,currency);
+  document.getElementById('cq-r-transit').textContent='🕐 Transit time: '+r.transit;
+
+  const footnoteEl = document.getElementById('cq-r-footnote');
+  if (footnoteEl) {
+    footnoteEl.style.display = isReturns ? 'block' : 'none';
+  }
+
+  content.style.display='block'; empty.style.display='none';
+}
+
+function generateCreateQuotePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const wh      = document.getElementById('cq-warehouse').value;
+  const country = document.getElementById('cq-country').value;
+  const val     = parseFloat(document.getElementById('cq-value').value);
+  const qty     = Math.max(1, parseInt(document.getElementById('cq-quantity').value)||1);
+  const client  = (document.getElementById('cq-client').value || '').trim();
+  const ref     = (document.getElementById('cq-reference').value || '').trim();
+
+  if (!wh || !country || isNaN(val) || val <= 0) {
+    alert('Please complete the shipment details before generating a quote.');
+    return;
+  }
+
+  const warehouseLabels = { us:'US (Salt Lake City)', de:'Germany (EU)', de_ret:'Germany - Returns', sg:'Singapore' };
+  const whLabel = warehouseLabels[wh] || wh;
+  const currency = (rates[wh] && rates[wh].currency) ? rates[wh].currency : 'USD';
+  const currSymbol = currency === 'EUR' ? '\u20ac' : '$';
+  const currLabel  = currency === 'EUR' ? 'EUR' : 'USD';
+  const isReturns  = wh === 'de_ret';
+
+  const get  = id => document.getElementById(id).textContent;
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  const pageW = 210, margin = 16, contentW = pageW - margin * 2;
+  let y = 0;
+
+  // ── Header bar ───────────────────────────────────────────────
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, pageW, 32, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Firstbase - An Appdirect Company', margin, 13);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text('Export Service Quotation', margin, 21);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text(date, pageW - margin, 13, { align: 'right' });
+  doc.setTextColor(251, 191, 36);
+  doc.text('ESTIMATE ONLY', pageW - margin, 21, { align: 'right' });
+
+  doc.setFillColor(37, 99, 235);
+  doc.rect(0, 32, pageW, 2, 'F');
+
+  y = 44;
+
+  // ── Prepared For block ──────────────────────────────────────
+  if (client || ref) {
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(191, 219, 254);
+    const blockH = ref ? 22 : 18;
+    doc.roundedRect(margin, y, contentW, blockH, 3, 3, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text('QUOTE PREPARED FOR', margin + 8, y + 7);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text(client || '—', margin + 8, y + 14);
+
+    if (ref) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(ref, margin + 8, y + 19);
+    }
+
+    y += blockH + 8;
+  }
+
+  // ── Shipment summary block ───────────────────────────────────
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(margin, y, contentW, 26, 3, 3, 'FD');
+
+  const col = contentW / 3;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text('ORIGIN WAREHOUSE', margin + 8, y + 8);
+  doc.text('DESTINATION', margin + col + 8, y + 8);
+  doc.text('QUANTITY', margin + col * 2 + 8, y + 8);
+
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin + col, y + 2, margin + col, y + 24);
+  doc.line(margin + col * 2, y + 2, margin + col * 2, y + 24);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42);
+  doc.text(whLabel, margin + 8, y + 19);
+  doc.text(country, margin + col + 8, y + 19);
+  doc.text(qty.toString(), margin + col * 2 + 8, y + 19);
+
+  y += 34;
+
+  // ── Section label ────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('COST BREAKDOWN', margin, y);
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin + 32, y - 1, margin + contentW, y - 1);
+  y += 4;
+
+  // ── Cost table ───────────────────────────────────────────────
+  const dutyLabel = (isReturns ? 'German Import VAT ' : 'Local Duties & Tax ') + get('cq-r-duty-pct');
+  const iorLabel  = 'IOR Minimum Fee' + (qty > 1 && !isReturns ? ' (\xd7' + qty + ')' : '');
+  const fixedLabel= 'Fixed Cost - Freight & Brokerage' + (qty > 1 && !isReturns ? ' (\xd7' + qty + ')' : '');
+
+  doc.autoTable({
+    startY: y,
+    margin: { left: margin, right: margin },
+    head: [['Description', 'Amount']],
+    body: [
+      ['Declared Value per Unit', currSymbol + val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ' + currLabel],
+      ['Quantity', qty.toString()],
+      ['Total Declared Value', get('cq-r-total-value')],
+      [dutyLabel, get('cq-r-duty')],
+      [iorLabel, get('cq-r-ior')],
+      [fixedLabel, get('cq-r-fixed')],
+      ['Subtotal Export Charges', get('cq-r-subtotal')],
+      ['Firstbase Service & Handling (8%)', get('cq-r-handling')],
+    ],
+    foot: [['Total Quote to Customer', get('cq-r-total')]],
+    headStyles: {
+      fillColor: [37, 99, 235],
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 8.5,
+      cellPadding: { top: 5, bottom: 5, left: 5, right: 5 }
+    },
+    footStyles: {
+      fillColor: [15, 23, 42],
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 10,
+      cellPadding: { top: 6, bottom: 6, left: 5, right: 5 },
+      halign: 'right'
+    },
+    bodyStyles: {
+      fontSize: 9,
+      textColor: [15, 23, 42],
+      cellPadding: { top: 4, bottom: 4, left: 5, right: 5 }
+    },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 42, halign: 'right', fontStyle: 'bold' }
+    },
+    didParseCell: (data) => {
+      if (data.section === 'foot') {
+        data.cell.styles.halign = 'right';
+      }
+      const highlight = ['German Import VAT','Local Duties & Tax','IOR Minimum Fee','Fixed Cost'];
+      if (data.section === 'body' && data.column.index === 1 &&
+          highlight.some(h => String(data.row.raw[0]).startsWith(h))) {
+        data.cell.styles.textColor = [37, 99, 235];
+      }
+    }
+  });
+
+  y = doc.lastAutoTable.finalY + 8;
+
+  // ── Transit time ─────────────────────────────────────────────
+  const rawTransit = get('cq-r-transit').replace(/^[^\w]+/, '').trim();
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(37, 99, 235);
+  doc.text('Estimated Transit: ' + rawTransit.replace('Transit time: ', ''), margin, y);
+
+  y += 8;
+
+  // ── Footnote for Germany - Returns ───────────────────────────
+  if (isReturns) {
+    const footnoteText = '* Returns from Switzerland and Norway are imported into the Firstbase Germany warehouse and processed through the EU warehouse lifecycle (reuse, storage, or ITAD). Only export/import service fees apply; standard return action fees do not apply.';
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    const fnLines = doc.splitTextToSize(footnoteText, contentW);
+    doc.text(fnLines, margin, y);
+    y += fnLines.length * 4 + 4;
+  }
+
+  // ── Disclaimer ───────────────────────────────────────────────
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, margin + contentW, y);
+  y += 5;
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  const disclaimer = 'Rates are estimates and may vary based on local taxes, customs clearance, brokerage fees, and contractor costs at time of shipment. For shipments with a total declared value exceeding $10,000 USD, please contact the Firstbase team for a custom quotation. This quote is valid for 30 days from the date of issue.';
+  const lines = doc.splitTextToSize(disclaimer, contentW);
+  doc.text(lines, margin, y);
+
+  // ── Footer ───────────────────────────────────────────────────
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 285, pageW, 12, 'F');
+  doc.setFillColor(37, 99, 235);
+  doc.rect(0, 285, 3, 12, 'F');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text('Firstbase - An Appdirect Company  |  Export Services  |  exports@firstbase.io', pageW / 2, 292.5, { align: 'center' });
+
+  const clientSlug = client ? client.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'') + '_' : '';
+  const filename = `Firstbase_Quote_${clientSlug}${country.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
   doc.save(filename);
 }
 
