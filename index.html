@@ -1692,11 +1692,11 @@
         <div class="modal-section-label">Shipment Info</div>
         <div class="modal-grid-2">
           <div class="modal-field">
-            <label>Client Name <span class="req">*</span></label>
+            <label>Client Name</label>
             <input type="text" id="m-client" placeholder="e.g. Discord" oninput="recalcModal()" />
           </div>
           <div class="modal-field">
-            <label>Firstbase Order ID <span class="req">*</span></label>
+            <label>Firstbase Order ID</label>
             <input type="text" id="m-orderid" placeholder="e.g. abc123..." />
           </div>
           <div class="modal-field">
@@ -1724,7 +1724,7 @@
             </div>
           </div>
           <div class="modal-field">
-            <label>Month / Year <span class="req">*</span></label>
+            <label>Month / Year</label>
             <select id="m-month">
               <option value="">— Select month —</option>
               <option>January 2026</option><option>February 2026</option><option>March 2026</option>
@@ -1758,54 +1758,53 @@
         <div class="modal-section-label" style="margin-top:20px">Cost Details</div>
         <div class="modal-grid-3">
           <div class="modal-field">
-            <label>Local Tax % <span class="req">*</span></label>
+            <label>Taxes</label>
             <div class="input-wrap-modal">
-              <input type="number" id="m-tax-pct" placeholder="e.g. 5" step="0.01" min="0" oninput="recalcModal()" />
-              <span class="input-suffix">%</span>
+              <span class="input-prefix-modal">$</span>
+              <input type="number" id="m-taxes" value="" placeholder="0.00" step="0.01" min="0" />
             </div>
           </div>
           <div class="modal-field">
             <label>IOR Fees</label>
             <div class="input-wrap-modal">
               <span class="input-prefix-modal">$</span>
-              <input type="number" id="m-ior-fee" value="150" step="0.01" min="0" oninput="recalcModal()" />
+              <input type="number" id="m-ior-fee" value="" placeholder="0.00" step="0.01" min="0" />
             </div>
           </div>
           <div class="modal-field">
             <label>Fixed Cost</label>
             <div class="input-wrap-modal">
               <span class="input-prefix-modal">$</span>
-              <input type="number" id="m-fixed" value="200" step="0.01" min="0" oninput="recalcModal()" />
+              <input type="number" id="m-fixed" value="" placeholder="0.00" step="0.01" min="0" />
             </div>
           </div>
           <div class="modal-field">
             <label>Variable Cost</label>
             <div class="input-wrap-modal">
               <span class="input-prefix-modal">$</span>
-              <input type="number" id="m-variable" value="0" step="0.01" min="0" oninput="recalcModal()" />
+              <input type="number" id="m-variable" value="" placeholder="0.00" step="0.01" min="0" />
             </div>
           </div>
           <div class="modal-field">
-            <label>FB Cost (internal) <span class="req">*</span></label>
+            <label>Handling</label>
             <div class="input-wrap-modal">
               <span class="input-prefix-modal">$</span>
-              <input type="number" id="m-fbcost" placeholder="e.g. 700" step="0.01" min="0" oninput="recalcModal()" />
+              <input type="number" id="m-handling" value="" placeholder="0.00" step="0.01" min="0" />
             </div>
           </div>
-        </div>
-
-        <!-- Live Preview -->
-        <div class="modal-preview">
-          <div class="preview-title">Calculated Costs</div>
-          <div class="preview-grid">
-            <div class="preview-row"><span>Total Item Value</span><span id="pv-total-value">$0.00</span></div>
-            <div class="preview-row"><span>Local Tax &amp; Duties</span><span id="pv-tax">$0.00</span></div>
-            <div class="preview-row"><span>IOR &amp; Brokerage</span><span id="pv-ior">$0.00</span></div>
-            <div class="preview-row"><span>Fixed Cost</span><span id="pv-fixed">$0.00</span></div>
-            <div class="preview-row"><span>Variable Cost</span><span id="pv-variable">$0.00</span></div>
-            <div class="preview-row"><span>FB Service &amp; Handling (8%)</span><span id="pv-handling">$0.00</span></div>
-            <div class="preview-row highlight"><span>Quote to Customer</span><span id="pv-quote">$0.00</span></div>
-            <div class="preview-row fb-row"><span>FB Cost <span id="pv-fbcost-bracket" class="fb-bracket"></span></span><span id="pv-margin" class="fb-margin">—</span></div>
+          <div class="modal-field">
+            <label>Quote to Customer</label>
+            <div class="input-wrap-modal">
+              <span class="input-prefix-modal">$</span>
+              <input type="number" id="m-quote-input" value="" placeholder="0.00" step="0.01" min="0" />
+            </div>
+          </div>
+          <div class="modal-field">
+            <label>FB Cost (internal)</label>
+            <div class="input-wrap-modal">
+              <span class="input-prefix-modal">$</span>
+              <input type="number" id="m-fbcost" value="" placeholder="0.00" step="0.01" min="0" />
+            </div>
           </div>
         </div>
 
@@ -2574,10 +2573,12 @@ function openAddShipment() {
     document.getElementById('dpd-' + key).classList.remove('open');
   });
   document.getElementById('m-month').value = '';
-  document.getElementById('m-tax-pct').value = '';
+  document.getElementById('m-taxes').value = '';
   document.getElementById('m-ior-fee').value = '';
   document.getElementById('m-fixed').value = '';
-  document.getElementById('m-variable').value = '0';
+  document.getElementById('m-variable').value = '';
+  document.getElementById('m-handling').value = '';
+  document.getElementById('m-quote-input').value = '';
   document.getElementById('m-fbcost').value = '';
   document.getElementById('modal-error').style.display = 'none';
 
@@ -2620,12 +2621,8 @@ function openEditShipment(num) {
 
   // Parse stored money values
   const parseMoney = str => parseFloat((str || '0').replace(/[$,]/g, '')) || 0;
-  const taxes    = parseMoney(s.taxes);
-  const iorFee   = parseMoney(s.brokerage);
-  const fixed    = parseMoney(s.fixed);
-  const variable = parseMoney(s.variable);
 
-  // Add item rows with data first so total value is correct for tax% calc
+  // Add item rows with data
   const itemsToFill = s.items.filter(i => i.item || i.country);
   itemsToFill.forEach(item => {
     addItemRow();
@@ -2647,23 +2644,14 @@ function openEditShipment(num) {
   // Pad with empty rows up to 5
   for (let i = itemsToFill.length; i < 5; i++) addItemRow();
 
-  // Compute tax % from total item value
-  let totalItemValue = 0;
-  itemsToFill.forEach(item => {
-    const v = parseMoney(item.value);
-    const c = item.count || 1;
-    totalItemValue += v * c;
-  });
-  const taxPct = totalItemValue > 0 ? (taxes / totalItemValue) * 100 : 0;
-
-  document.getElementById('m-tax-pct').value  = parseFloat(taxPct.toFixed(4));
-  document.getElementById('m-ior-fee').value  = iorFee;
-  document.getElementById('m-fixed').value    = fixed;
-  document.getElementById('m-variable').value = variable;
-
-  // fbCostRaw is the original FB cost entered; fbCost is the margin
-  const fbCostRaw = parseMoney(s.fbCostRaw);
-  document.getElementById('m-fbcost').value = fbCostRaw > 0 ? fbCostRaw : '';
+  // Fill cost fields directly from stored values
+  document.getElementById('m-taxes').value       = parseMoney(s.taxes)    || '';
+  document.getElementById('m-ior-fee').value      = parseMoney(s.brokerage)|| '';
+  document.getElementById('m-fixed').value        = parseMoney(s.fixed)    || '';
+  document.getElementById('m-variable').value     = parseMoney(s.variable) || '';
+  document.getElementById('m-handling').value     = parseMoney(s.handling) || '';
+  document.getElementById('m-quote-input').value  = parseMoney(s.quote)    || '';
+  document.getElementById('m-fbcost').value       = parseMoney(s.fbCostRaw)|| '';
 
   document.getElementById('modal-error').style.display = 'none';
 
@@ -3102,50 +3090,14 @@ const COUNTRY_RATES = {
 
 function onCountrySelect(selectEl) {
   const country = selectEl.value;
-  if (!country || !COUNTRY_RATES[country]) { recalcModal(); return; }
+  if (!country || !COUNTRY_RATES[country]) return;
   const r = COUNTRY_RATES[country];
-  document.getElementById('m-tax-pct').value = r.duty;
   document.getElementById('m-ior-fee').value = r.ior;
   document.getElementById('m-fixed').value   = r.fixed;
-  recalcModal();
 }
 
 function recalcModal() {
-  // Sum item values (value × count per row)
-  const rows = document.querySelectorAll('#m-items-container .item-row');
-  let totalValue = 0;
-  rows.forEach(row => {
-    const v = parseFloat(row.querySelector('.ir-value').value) || 0;
-    const c = parseInt(row.querySelector('.ir-count').value) || 1;
-    totalValue += v * c;
-  });
-
-  const taxPct = parseFloat(document.getElementById('m-tax-pct').value) || 0;
-  const iorFee = parseFloat(document.getElementById('m-ior-fee').value) || 0;
-  const fixedCost = parseFloat(document.getElementById('m-fixed').value) || 0;
-  const variableCost = parseFloat(document.getElementById('m-variable').value) || 0;
-  const fbCostEntered = parseFloat(document.getElementById('m-fbcost').value);
-
-  const localTax = totalValue * (taxPct / 100);
-  const handling = (localTax + iorFee + fixedCost + variableCost) * 0.08;
-  const quote = localTax + iorFee + fixedCost + variableCost + handling;
-  const margin = !isNaN(fbCostEntered) ? quote - fbCostEntered : null;
-
-  document.getElementById('pv-total-value').textContent = fmtMoney(totalValue);
-  document.getElementById('pv-tax').textContent = fmtMoney(localTax);
-  document.getElementById('pv-ior').textContent = fmtMoney(iorFee);
-  document.getElementById('pv-fixed').textContent = fmtMoney(fixedCost);
-  document.getElementById('pv-variable').textContent = fmtMoney(variableCost);
-  document.getElementById('pv-handling').textContent = fmtMoney(handling);
-  document.getElementById('pv-quote').textContent = fmtMoney(quote);
-
-  if (margin !== null) {
-    document.getElementById('pv-fbcost-bracket').textContent = '(' + fmtMoney(fbCostEntered) + ')';
-    document.getElementById('pv-margin').textContent = fmtMoney(margin);
-  } else {
-    document.getElementById('pv-fbcost-bracket').textContent = '';
-    document.getElementById('pv-margin').textContent = '—';
-  }
+  // No-op: calculations removed. Cost fields are entered directly.
 }
 
 async function submitShipment() {
@@ -3153,20 +3105,10 @@ async function submitShipment() {
   errEl.style.display = 'none';
 
   const client  = document.getElementById('m-client').value.trim();
-  const orderId = document.getElementById('m-orderid').value.trim();
   const month   = document.getElementById('m-month').value;
-  const taxPct  = parseFloat(document.getElementById('m-tax-pct').value);
-  const fbCostEntered = parseFloat(document.getElementById('m-fbcost').value);
-
-  if (!client)  { errEl.textContent = 'Client Name is required.'; errEl.style.display='block'; return; }
-  if (!orderId) { errEl.textContent = 'Firstbase Order ID is required.'; errEl.style.display='block'; return; }
-  if (!month)   { errEl.textContent = 'Month / Year is required.'; errEl.style.display='block'; return; }
-  if (isNaN(taxPct)) { errEl.textContent = 'Local Tax % is required.'; errEl.style.display='block'; return; }
-  if (isNaN(fbCostEntered)) { errEl.textContent = 'FB Cost is required.'; errEl.style.display='block'; return; }
 
   const rows = document.querySelectorAll('#m-items-container .item-row');
   const items = [];
-  let totalValue = 0;
   rows.forEach(row => {
     const country = row.querySelector('.ir-country').value.trim();
     const item    = row.querySelector('.ir-item').value.trim();
@@ -3174,65 +3116,58 @@ async function submitShipment() {
     const weight  = parseInt(row.querySelector('.ir-weight').value) || 0;
     const value   = parseFloat(row.querySelector('.ir-value').value) || 0;
     if (country || item || count || weight || value) {
-      totalValue += value * (count || 1);
       items.push({ country: country || '—', item, count, weight, value: fmtMoney(value) });
     }
   });
 
+  const taxes       = parseFloat(document.getElementById('m-taxes').value) || 0;
   const iorFee      = parseFloat(document.getElementById('m-ior-fee').value) || 0;
   const fixedCost   = parseFloat(document.getElementById('m-fixed').value) || 0;
   const variableCost= parseFloat(document.getElementById('m-variable').value) || 0;
-  const localTax    = totalValue * (taxPct / 100);
-  const handling    = (localTax + iorFee + fixedCost + variableCost) * 0.08;
-  const quote       = localTax + iorFee + fixedCost + variableCost + handling;
-  const margin      = quote - fbCostEntered;
+  const handling    = parseFloat(document.getElementById('m-handling').value) || 0;
+  const quoteAmt    = parseFloat(document.getElementById('m-quote-input').value) || 0;
+  const fbCost      = parseFloat(document.getElementById('m-fbcost').value) || 0;
 
   const isEditing = editingShipmentNum !== null;
   const shipNum = isEditing ? editingShipmentNum : (shipments.length > 0 ? Math.max(...shipments.map(s => s.num)) + 1 : 1);
 
   const newShipment = {
-    month,
-    num: shipNum,
-    client,
+    month:     month || '',
+    num:       shipNum,
+    client:    client || '',
     orderId:   document.getElementById('m-orderid').value.trim(),
     planned:   document.getElementById('m-planned').value.trim(),
     confirmed: document.getElementById('m-confirmed').value.trim(),
     delivery:  document.getElementById('m-delivery').value.trim(),
     ior:       document.getElementById('m-ior').value.trim(),
     invoice:   document.getElementById('m-invoice').value.trim(),
-    taxes:     fmtMoney(localTax),
+    taxes:     fmtMoney(taxes),
     brokerage: fmtMoney(iorFee),
     fixed:     fmtMoney(fixedCost),
     variable:  fmtMoney(variableCost),
     handling:  fmtMoney(handling),
-    quote:     fmtMoney(quote),
-    fbCostRaw: fmtMoney(fbCostEntered),
-    fbCost:    fmtMoney(margin),
+    quote:     fmtMoney(quoteAmt),
+    fbCostRaw: fmtMoney(fbCost),
+    fbCost:    fmtMoney(fbCost),
     items
   };
 
-  // Post to Google Sheets via Apps Script
   const submitBtn = document.querySelector('.modal-submit');
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving…'; }
 
-  const gasAction = isEditing ? 'editShipment' : 'addShipment';
-  const res = await gasPost({ action: gasAction, shipment: newShipment });
+  if (isEditing) {
+    // Update in-memory immediately — Apps Script sync is best-effort
+    const idx = shipments.findIndex(s => s.num === editingShipmentNum);
+    if (idx !== -1) shipments[idx] = newShipment;
+    editingShipmentNum = null;
 
-  if (submitBtn) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = isEditing ? 'Save Changes' : 'Add Shipment';
-  }
+    // Try to persist to Google Sheets; silently continue if backend lacks the handler
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving…'; }
+    gasPost({ action: 'editShipment', shipment: newShipment }).catch(() => {});
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Save Changes'; }
 
-  if (res && res.success) {
-    if (isEditing) {
-      const idx = shipments.findIndex(s => s.num === editingShipmentNum);
-      if (idx !== -1) shipments[idx] = newShipment;
-      editingShipmentNum = null;
-    } else {
-      shipments.push(newShipment);
-    }
-    repoLoaded = false;
+    // Re-render without re-fetching from Sheets (to preserve the in-memory edit)
     repoInited = false;
+    repoLoaded = true; // keep true so initRepo() skips the fetch
     initRepo();
     closeAddShipment();
     setTimeout(() => {
@@ -3240,8 +3175,27 @@ async function submitShipment() {
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 150);
   } else {
-    errEl.textContent = 'Save failed: ' + (res && res.error ? res.error : 'check Apps Script URL');
-    errEl.style.display = 'block';
+    // New shipment — post to Google Sheets via Apps Script
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving…'; }
+
+    const res = await gasPost({ action: 'addShipment', shipment: newShipment });
+
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Add Shipment'; }
+
+    if (res && res.success) {
+      shipments.push(newShipment);
+      repoLoaded = false;
+      repoInited = false;
+      initRepo();
+      closeAddShipment();
+      setTimeout(() => {
+        const el = document.getElementById('ship-' + shipNum);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    } else {
+      errEl.textContent = 'Save failed: ' + (res && res.error ? res.error : 'check Apps Script URL');
+      errEl.style.display = 'block';
+    }
   }
 }
 
