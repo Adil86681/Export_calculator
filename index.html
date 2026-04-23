@@ -564,6 +564,8 @@
   .sh-pdf-btn:hover { background: rgba(37,99,235,0.08); border-color: var(--accent); }
   .sh-delete-btn { color: var(--muted); }
   .sh-delete-btn:hover { color: var(--warn); border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.08); }
+  .sh-edit-btn { color: var(--accent2); border-color: rgba(124,58,237,0.3); }
+  .sh-edit-btn:hover { background: rgba(124,58,237,0.08); border-color: var(--accent2); }
   .sh-quote {
     font-family: 'DM Mono', monospace;
     font-size: 14px;
@@ -2292,6 +2294,7 @@ function renderBlock(s) {
         <span class="sh-quote">${s.quote}</span>
         ${s.ior ? `<span class="sh-ior">${s.ior}</span>` : ''}
         <button class="sh-action-btn sh-pdf-btn" onclick="event.stopPropagation();exportPDF(${s.num})" title="Export PDF">PDF</button>
+        <button class="sh-action-btn sh-edit-btn" onclick="event.stopPropagation();openEditShipment(${s.num})" title="Edit shipment">✏ Edit</button>
         <button class="sh-action-btn sh-delete-btn" onclick="event.stopPropagation();deleteShipment(${s.num})" title="Delete shipment">🗑</button>
         <span class="sh-chevron">▼</span>
       </div>
@@ -2470,6 +2473,7 @@ function toggleBlock(id) {
 
 // ── ADD SHIPMENT MODAL ───────────────────────────────────────────
 let itemRowCount = 0;
+let editingShipmentNum = null;
 
 // ── DATE PICKER ──────────────────────────────────────────────────
 const DP_STATE = {};
@@ -2553,6 +2557,7 @@ document.addEventListener('click', function(e) {
 });
 
 function openAddShipment() {
+  editingShipmentNum = null;
   itemRowCount = 0;
   document.getElementById('m-items-container').innerHTML = buildItemRowHeader();
 
@@ -2575,6 +2580,11 @@ function openAddShipment() {
   document.getElementById('m-variable').value = '0';
   document.getElementById('m-fbcost').value = '';
   document.getElementById('modal-error').style.display = 'none';
+
+  // Reset modal title and button
+  document.querySelector('.modal-title').textContent = 'New Shipment';
+  document.querySelector('.modal-submit').textContent = 'Add Shipment';
+
   recalcModal();
   document.getElementById('add-shipment-overlay').classList.add('open');
 }
@@ -2582,6 +2592,87 @@ function openAddShipment() {
 function closeAddShipment(e) {
   if (e && e.target !== document.getElementById('add-shipment-overlay')) return;
   document.getElementById('add-shipment-overlay').classList.remove('open');
+}
+
+function openEditShipment(num) {
+  const s = shipments.find(sh => sh.num === num);
+  if (!s) return;
+
+  editingShipmentNum = num;
+  itemRowCount = 0;
+  document.getElementById('m-items-container').innerHTML = buildItemRowHeader();
+
+  // Reset date pickers first
+  ['planned','confirmed','delivery'].forEach(key => {
+    initDatePicker(key);
+    document.getElementById('dpd-' + key).classList.remove('open');
+  });
+
+  // Fill basic fields
+  document.getElementById('m-client').value    = s.client || '';
+  document.getElementById('m-orderid').value   = s.orderId || '';
+  document.getElementById('m-planned').value   = s.planned || '';
+  document.getElementById('m-confirmed').value = s.confirmed || '';
+  document.getElementById('m-delivery').value  = s.delivery || '';
+  document.getElementById('m-ior').value       = s.ior || '';
+  document.getElementById('m-invoice').value   = s.invoice || '';
+  document.getElementById('m-month').value     = s.month || '';
+
+  // Parse stored money values
+  const parseMoney = str => parseFloat((str || '0').replace(/[$,]/g, '')) || 0;
+  const taxes    = parseMoney(s.taxes);
+  const iorFee   = parseMoney(s.brokerage);
+  const fixed    = parseMoney(s.fixed);
+  const variable = parseMoney(s.variable);
+
+  // Add item rows with data first so total value is correct for tax% calc
+  const itemsToFill = s.items.filter(i => i.item || i.country);
+  itemsToFill.forEach(item => {
+    addItemRow();
+    const rowId = 'item-row-' + itemRowCount;
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const countrySelect = row.querySelector('.ir-country');
+    if (countrySelect) countrySelect.value = item.country || '';
+    const itemInput = row.querySelector('.ir-item');
+    if (itemInput) itemInput.value = item.item || '';
+    const countInput  = row.querySelector('.ir-count');
+    const weightInput = row.querySelector('.ir-weight');
+    const valueInput  = row.querySelector('.ir-value');
+    if (countInput)  countInput.value  = item.count  || '';
+    if (weightInput) weightInput.value = item.weight || '';
+    if (valueInput)  valueInput.value  = parseMoney(item.value) || '';
+  });
+
+  // Pad with empty rows up to 5
+  for (let i = itemsToFill.length; i < 5; i++) addItemRow();
+
+  // Compute tax % from total item value
+  let totalItemValue = 0;
+  itemsToFill.forEach(item => {
+    const v = parseMoney(item.value);
+    const c = item.count || 1;
+    totalItemValue += v * c;
+  });
+  const taxPct = totalItemValue > 0 ? (taxes / totalItemValue) * 100 : 0;
+
+  document.getElementById('m-tax-pct').value  = parseFloat(taxPct.toFixed(4));
+  document.getElementById('m-ior-fee').value  = iorFee;
+  document.getElementById('m-fixed').value    = fixed;
+  document.getElementById('m-variable').value = variable;
+
+  // fbCostRaw is the original FB cost entered; fbCost is the margin
+  const fbCostRaw = parseMoney(s.fbCostRaw);
+  document.getElementById('m-fbcost').value = fbCostRaw > 0 ? fbCostRaw : '';
+
+  document.getElementById('modal-error').style.display = 'none';
+
+  // Update modal title and submit button
+  document.querySelector('.modal-title').textContent = 'Edit Shipment #' + num;
+  document.querySelector('.modal-submit').textContent = 'Save Changes';
+
+  recalcModal();
+  document.getElementById('add-shipment-overlay').classList.add('open');
 }
 
 // ── PRODUCT CATALOG ──────────────────────────────────────────────────────────
@@ -3096,11 +3187,12 @@ async function submitShipment() {
   const quote       = localTax + iorFee + fixedCost + variableCost + handling;
   const margin      = quote - fbCostEntered;
 
-  const nextNum = shipments.length > 0 ? Math.max(...shipments.map(s => s.num)) + 1 : 1;
+  const isEditing = editingShipmentNum !== null;
+  const shipNum = isEditing ? editingShipmentNum : (shipments.length > 0 ? Math.max(...shipments.map(s => s.num)) + 1 : 1);
 
   const newShipment = {
     month,
-    num: nextNum,
+    num: shipNum,
     client,
     orderId:   document.getElementById('m-orderid').value.trim(),
     planned:   document.getElementById('m-planned').value.trim(),
@@ -3123,18 +3215,28 @@ async function submitShipment() {
   const submitBtn = document.querySelector('.modal-submit');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving…'; }
 
-  const res = await gasPost({ action: 'addShipment', shipment: newShipment });
+  const gasAction = isEditing ? 'editShipment' : 'addShipment';
+  const res = await gasPost({ action: gasAction, shipment: newShipment });
 
-  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Add Shipment'; }
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = isEditing ? 'Save Changes' : 'Add Shipment';
+  }
 
   if (res && res.success) {
-    shipments.push(newShipment);
-    repoLoaded = false; // force reload next time tab is opened
+    if (isEditing) {
+      const idx = shipments.findIndex(s => s.num === editingShipmentNum);
+      if (idx !== -1) shipments[idx] = newShipment;
+      editingShipmentNum = null;
+    } else {
+      shipments.push(newShipment);
+    }
+    repoLoaded = false;
     repoInited = false;
     initRepo();
     closeAddShipment();
     setTimeout(() => {
-      const el = document.getElementById('ship-' + nextNum);
+      const el = document.getElementById('ship-' + shipNum);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 150);
   } else {
