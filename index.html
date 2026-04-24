@@ -1551,6 +1551,15 @@
   <!-- ══════════════════════════════════════════════════════════ -->
   <div id="tab-quote" class="tab-panel">
 
+  <!-- ── Quote Mode Toggle ── -->
+  <div style="display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;">
+    <button id="qmode-customer-btn" onclick="switchQuoteMode('customer')" style="flex:1;padding:10px 16px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.2s;">📄 Customer Quote</button>
+    <button id="qmode-partner-btn" onclick="switchQuoteMode('partner')" style="flex:1;padding:10px 16px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.04em;cursor:pointer;transition:all 0.2s;">✉ Partner RFQ</button>
+  </div>
+
+  <!-- ══ CUSTOMER QUOTE SECTION ══ -->
+  <div id="cq-customer-section">
+
   <div class="card" style="animation-delay:0.05s">
     <div class="card-title">Quote Recipient</div>
     <div class="form-grid">
@@ -1674,6 +1683,119 @@
       <div class="note" style="margin-top:12px">All cost inputs are entered manually. Subtotal, Firstbase Service &amp; Handling (8%), and Total Quote are auto-calculated.</div>
     </div>
   </div>
+
+  </div><!-- end cq-customer-section -->
+
+  <!-- ══ PARTNER RFQ SECTION ══ -->
+  <div id="cq-partner-section" style="display:none">
+
+  <div class="card" style="animation-delay:0.05s">
+    <div class="card-title">Partner Selection</div>
+    <div class="form-grid">
+      <div class="field full">
+        <label>Select Partner</label>
+        <select id="rfq-partner" onchange="generatePartnerRFQ()" style="font-size:14px;">
+          <option value="">— Select a partner —</option>
+          <option value="mouseandbear">Mouse &amp; Bear</option>
+          <option value="iordirect">IOR Direct</option>
+          <option value="truelog">Truelog</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="animation-delay:0.1s">
+    <div class="card-title">Shipment Details</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Origin Country</label>
+        <input type="text" id="rfq-origin-country" placeholder="e.g. United States" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Origin Address</label>
+        <input type="text" id="rfq-origin-address" placeholder="e.g. 123 Main St, Salt Lake City, UT 84101" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Destination Country</label>
+        <input type="text" id="rfq-dest-country" placeholder="e.g. Japan" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Destination Address</label>
+        <input type="text" id="rfq-dest-address" placeholder="e.g. 1-1 Shinjuku, Tokyo 160-0001" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Product Type</label>
+        <input type="text" id="rfq-product" placeholder="e.g. Laptops" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Quantity</label>
+        <input type="number" id="rfq-qty" min="1" value="1" placeholder="e.g. 1" oninput="generatePartnerRFQ()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="animation-delay:0.15s">
+    <div class="card-title">Package Specifications</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Length (in)</label>
+        <input type="number" id="rfq-length" min="0" step="0.1" placeholder="e.g. 15.5" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Width (in)</label>
+        <input type="number" id="rfq-width" min="0" step="0.1" placeholder="e.g. 10.2" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Height (in)</label>
+        <input type="number" id="rfq-height" min="0" step="0.1" placeholder="e.g. 3.0" oninput="generatePartnerRFQ()" />
+      </div>
+      <div class="field">
+        <label>Weight</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="number" id="rfq-weight" min="0" step="0.1" placeholder="e.g. 4.5" oninput="generatePartnerRFQ()" style="flex:1" />
+          <select id="rfq-weight-unit" onchange="generatePartnerRFQ()" style="width:80px;flex-shrink:0;">
+            <option value="lbs">lbs</option>
+            <option value="kg">kg</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Declared Value (USD)</label>
+        <div class="input-wrap">
+          <span class="currency-prefix">$</span>
+          <input type="number" id="rfq-value" min="0" step="0.01" placeholder="e.g. 2000" oninput="generatePartnerRFQ()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Preview -->
+  <div class="results-card" id="rfq-email-preview" style="display:none">
+    <div class="card-title">Email Template</div>
+    <div style="margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:start;font-size:13px;margin-bottom:14px;background:rgba(37,99,235,0.05);border:1px solid rgba(37,99,235,0.12);border-radius:8px;padding:12px 14px;">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);padding-top:1px;">To:</span>
+        <span id="rfq-email-to" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);word-break:break-all;"></span>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);padding-top:1px;">Subject:</span>
+        <span id="rfq-email-subject" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text);"></span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <label style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);">Body</label>
+        <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;">Click field to select all</span>
+      </div>
+      <textarea id="rfq-email-body" onclick="this.select()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:16px;outline:none;resize:vertical;min-height:280px;line-height:1.7;cursor:text;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="copyRfqEmail()" id="rfq-copy-btn" style="background:var(--accent);border:none;border-radius:8px;padding:10px 22px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:background 0.2s;letter-spacing:0.02em;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='var(--accent)'">📋 Copy Email</button>
+    </div>
+  </div>
+
+  <div id="rfq-empty-state" style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;">
+    <div style="font-size:36px;margin-bottom:12px;opacity:0.4;">✉</div>
+    Select a partner and fill in shipment details to generate the RFQ email.
+  </div>
+
+  </div><!-- end cq-partner-section -->
 
   </div><!-- end tab-quote -->
 
@@ -3932,6 +4054,157 @@ function copyQuoteEmail() {
   ta.select();
   document.execCommand('copy');
   const btn = document.getElementById('qr-copy-btn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✓ Copied!';
+  btn.style.background = '#16a34a';
+  btn.onmouseover = null;
+  btn.onmouseout  = null;
+  setTimeout(() => {
+    btn.innerHTML = orig;
+    btn.style.background = '';
+    btn.onmouseover = function(){ this.style.background='#1d4ed8'; };
+    btn.onmouseout  = function(){ this.style.background='var(--accent)'; };
+  }, 2200);
+}
+
+// ── PARTNER RFQ ──────────────────────────────────────────────────
+const PARTNERS = {
+  mouseandbear: {
+    name: 'Mouse & Bear',
+    to: 'IORSolutions@mouseandbear.com; gemma.stunt@mouseandbear.com; amelia.stride@mouseandbear.com',
+    greeting: 'Hi,'
+  },
+  iordirect: {
+    name: 'IOR Direct',
+    to: 'quotes@iordirect.com',
+    greeting: 'Hi,'
+  },
+  truelog: {
+    name: 'Truelog',
+    to: 'jay@truelog.solutions',
+    greeting: 'Hi Jay,'
+  }
+};
+
+function switchQuoteMode(mode) {
+  const customerSection = document.getElementById('cq-customer-section');
+  const partnerSection  = document.getElementById('cq-partner-section');
+  const customerBtn     = document.getElementById('qmode-customer-btn');
+  const partnerBtn      = document.getElementById('qmode-partner-btn');
+
+  if (mode === 'customer') {
+    customerSection.style.display = '';
+    partnerSection.style.display  = 'none';
+    customerBtn.style.background  = 'var(--accent)';
+    customerBtn.style.color       = '#fff';
+    customerBtn.style.fontWeight  = '700';
+    partnerBtn.style.background   = 'transparent';
+    partnerBtn.style.color        = 'var(--muted)';
+    partnerBtn.style.fontWeight   = '600';
+  } else {
+    customerSection.style.display = 'none';
+    partnerSection.style.display  = '';
+    partnerBtn.style.background   = 'var(--accent)';
+    partnerBtn.style.color        = '#fff';
+    partnerBtn.style.fontWeight   = '700';
+    customerBtn.style.background  = 'transparent';
+    customerBtn.style.color       = 'var(--muted)';
+    customerBtn.style.fontWeight  = '600';
+    generatePartnerRFQ();
+  }
+}
+
+function generatePartnerRFQ() {
+  const partnerKey     = (document.getElementById('rfq-partner').value || '').trim();
+  const originCountry  = (document.getElementById('rfq-origin-country').value || '').trim();
+  const originAddress  = (document.getElementById('rfq-origin-address').value || '').trim();
+  const destCountry    = (document.getElementById('rfq-dest-country').value || '').trim();
+  const destAddress    = (document.getElementById('rfq-dest-address').value || '').trim();
+  const product        = (document.getElementById('rfq-product').value || '').trim();
+  const qty            = parseInt(document.getElementById('rfq-qty').value) || 1;
+  const length         = document.getElementById('rfq-length').value.trim();
+  const width          = document.getElementById('rfq-width').value.trim();
+  const height         = document.getElementById('rfq-height').value.trim();
+  const weight         = document.getElementById('rfq-weight').value.trim();
+  const weightUnit     = document.getElementById('rfq-weight-unit').value;
+  const value          = document.getElementById('rfq-value').value.trim();
+
+  const emptyState  = document.getElementById('rfq-empty-state');
+  const emailPreview = document.getElementById('rfq-email-preview');
+
+  if (!partnerKey) {
+    emptyState.style.display  = 'block';
+    emailPreview.style.display = 'none';
+    return;
+  }
+
+  const partner = PARTNERS[partnerKey];
+  emptyState.style.display   = 'none';
+  emailPreview.style.display = 'block';
+
+  // Build subject
+  const originPart = originCountry || '[Origin]';
+  const destPart   = destCountry   || '[Destination]';
+  const prodPart   = product       || 'Shipment';
+  const subject    = `Quote Request – ${originPart} to ${destPart} – ${prodPart}`;
+
+  // Build body
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const dimLine = (length && width && height)
+    ? `${length}" (L) × ${width}" (W) × ${height}" (H)`
+    : '[To be confirmed]';
+  const weightLine = weight
+    ? `${weight} ${weightUnit}`
+    : '[To be confirmed]';
+  const valueLine = value
+    ? `$${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+    : '[To be confirmed]';
+
+  const body =
+`${partner.greeting}
+
+I hope you're doing well. We would like to request a quote for the following export shipment and kindly ask that you provide pricing and lead time at your earliest convenience.
+
+──────────────────────────────
+SHIPMENT DETAILS
+──────────────────────────────
+Origin Country:       ${originCountry || '[To be confirmed]'}
+Origin Address:       ${originAddress || '[To be confirmed]'}
+
+Destination Country:  ${destCountry || '[To be confirmed]'}
+Destination Address:  ${destAddress || '[To be confirmed]'}
+
+Product Type:         ${product || '[To be confirmed]'}
+Quantity:             ${qty} unit${qty !== 1 ? 's' : ''}
+Dimensions (per unit):${dimLine}
+Weight (per unit):    ${weightLine}
+Declared Value:       ${valueLine}
+──────────────────────────────
+
+Could you please advise on the following:
+  1. Total shipping cost (freight + brokerage)
+  2. IOR (Importer of Record) fees, if applicable
+  3. Estimated duties and taxes
+  4. Estimated transit time
+  5. Any additional import requirements for ${destCountry || 'the destination country'}
+
+Please let us know if you need any further information to prepare the quote.
+
+Thank you,
+Adil Khan
+Export Services – Firstbase
+exports@firstbase.io`;
+
+  document.getElementById('rfq-email-to').textContent      = partner.to;
+  document.getElementById('rfq-email-subject').textContent  = subject;
+  document.getElementById('rfq-email-body').value           = body;
+}
+
+function copyRfqEmail() {
+  const ta = document.getElementById('rfq-email-body');
+  ta.select();
+  document.execCommand('copy');
+  const btn = document.getElementById('rfq-copy-btn');
   const orig = btn.innerHTML;
   btn.innerHTML = '✓ Copied!';
   btn.style.background = '#16a34a';
