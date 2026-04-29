@@ -1730,11 +1730,15 @@
     <div class="form-grid">
       <div class="field">
         <label>Origin Country</label>
-        <input type="text" id="rfq-origin-country" placeholder="e.g. United States" oninput="generatePartnerRFQ()" />
+        <select id="rfq-origin-country" onchange="onRfqOriginChange()" style="font-size:14px;">
+          <option value="">— Select origin —</option>
+          <option value="United States">🇺🇸 United States</option>
+          <option value="Germany">🇩🇪 Germany</option>
+        </select>
       </div>
       <div class="field">
         <label>Origin Address</label>
-        <input type="text" id="rfq-origin-address" placeholder="e.g. 123 Main St, Salt Lake City, UT 84101" oninput="generatePartnerRFQ()" />
+        <input type="text" id="rfq-origin-address" placeholder="Auto-filled or enter manually" oninput="generatePartnerRFQ()" />
       </div>
       <div class="field">
         <label>Destination Country</label>
@@ -1744,50 +1748,28 @@
         <label>Destination Address</label>
         <input type="text" id="rfq-dest-address" placeholder="e.g. 1-1 Shinjuku, Tokyo 160-0001" oninput="generatePartnerRFQ()" />
       </div>
-      <div class="field">
-        <label>Product Type</label>
-        <input type="text" id="rfq-product" placeholder="e.g. Laptops" oninput="generatePartnerRFQ()" />
-      </div>
-      <div class="field">
-        <label>Quantity</label>
-        <input type="number" id="rfq-qty" min="1" value="1" placeholder="e.g. 1" oninput="generatePartnerRFQ()" />
-      </div>
+
     </div>
   </div>
 
   <div class="card" style="animation-delay:0.15s">
     <div class="card-title">Package Specifications</div>
-    <div class="form-grid">
-      <div class="field">
-        <label>Length (in)</label>
-        <input type="number" id="rfq-length" min="0" step="0.1" placeholder="e.g. 15.5" oninput="generatePartnerRFQ()" />
-      </div>
-      <div class="field">
-        <label>Width (in)</label>
-        <input type="number" id="rfq-width" min="0" step="0.1" placeholder="e.g. 10.2" oninput="generatePartnerRFQ()" />
-      </div>
-      <div class="field">
-        <label>Height (in)</label>
-        <input type="number" id="rfq-height" min="0" step="0.1" placeholder="e.g. 3.0" oninput="generatePartnerRFQ()" />
-      </div>
-      <div class="field">
-        <label>Weight</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="number" id="rfq-weight" min="0" step="0.1" placeholder="e.g. 4.5" oninput="generatePartnerRFQ()" style="flex:1" />
-          <select id="rfq-weight-unit" onchange="generatePartnerRFQ()" style="width:80px;flex-shrink:0;">
-            <option value="lbs">lbs</option>
-            <option value="kg">kg</option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label>Declared Value (USD)</label>
-        <div class="input-wrap">
-          <span class="currency-prefix">$</span>
-          <input type="number" id="rfq-value" min="0" step="0.01" placeholder="e.g. 2000" oninput="generatePartnerRFQ()" />
-        </div>
-      </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+      <label style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;">Number of Products</label>
+      <select id="rfq-num-products" onchange="updateRfqProductBlocks()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;padding:10px 36px 10px 14px;outline:none;appearance:none;-webkit-appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;transition:border-color 0.2s;width:100px;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
     </div>
+    <div id="rfq-products-container"></div>
   </div>
 
   <!-- Email Preview -->
@@ -4141,90 +4123,188 @@ function switchQuoteMode(mode) {
     customerBtn.style.background  = 'transparent';
     customerBtn.style.color       = 'var(--muted)';
     customerBtn.style.fontWeight  = '600';
-    generatePartnerRFQ();
+    updateRfqProductBlocks();
   }
 }
 
-function generatePartnerRFQ() {
-  const partnerKey     = (document.getElementById('rfq-partner').value || '').trim();
-  const originCountry  = (document.getElementById('rfq-origin-country').value || '').trim();
-  const originAddress  = (document.getElementById('rfq-origin-address').value || '').trim();
-  const destCountry    = (document.getElementById('rfq-dest-country').value || '').trim();
-  const destAddress    = (document.getElementById('rfq-dest-address').value || '').trim();
-  const product        = (document.getElementById('rfq-product').value || '').trim();
-  const qty            = parseInt(document.getElementById('rfq-qty').value) || 1;
-  const length         = document.getElementById('rfq-length').value.trim();
-  const width          = document.getElementById('rfq-width').value.trim();
-  const height         = document.getElementById('rfq-height').value.trim();
-  const weight         = document.getElementById('rfq-weight').value.trim();
-  const weightUnit     = document.getElementById('rfq-weight-unit').value;
-  const value          = document.getElementById('rfq-value').value.trim();
+function updateRfqProductBlocks() {
+  const n = parseInt(document.getElementById('rfq-num-products').value) || 1;
+  const container = document.getElementById('rfq-products-container');
 
-  const emptyState  = document.getElementById('rfq-empty-state');
-  const emailPreview = document.getElementById('rfq-email-preview');
+  // Preserve existing values before re-render
+  const existing = [];
+  container.querySelectorAll('.rfq-product-block').forEach(function(b) {
+    existing.push({
+      product: b.querySelector('.rfq-prod-type').value,
+      qty:     b.querySelector('.rfq-prod-qty').value,
+      length:  b.querySelector('.rfq-prod-length').value,
+      width:   b.querySelector('.rfq-prod-width').value,
+      height:  b.querySelector('.rfq-prod-height').value,
+      weight:  b.querySelector('.rfq-prod-weight').value,
+      wunit:   b.querySelector('.rfq-prod-wunit').value,
+      value:   b.querySelector('.rfq-prod-value').value
+    });
+  });
+
+  container.innerHTML = '';
+
+  for (var i = 0; i < n; i++) {
+    var prev  = existing[i] || {};
+    var block = document.createElement('div');
+    block.className = 'rfq-product-block';
+    block.style.cssText = (i === 0)
+      ? 'margin-bottom:20px;'
+      : 'padding-top:20px;border-top:1px solid var(--border);margin-bottom:20px;';
+
+    var labelHtml = (n > 1)
+      ? '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;">PRODUCT ' + (i + 1) + '</div>'
+      : '';
+
+    var lbsSel = (!prev.wunit || prev.wunit === 'lbs') ? ' selected' : '';
+    var kgSel  = (prev.wunit === 'kg') ? ' selected' : '';
+
+    block.innerHTML =
+      labelHtml +
+      '<div class="form-grid">' +
+        '<div class="field">' +
+          '<label>Product Type</label>' +
+          '<input type="text" class="rfq-prod-type" placeholder="e.g. Laptops" value="' + (prev.product||'') + '" oninput="generatePartnerRFQ()" />' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Quantity</label>' +
+          '<input type="number" class="rfq-prod-qty" min="1" value="' + (prev.qty||'1') + '" placeholder="e.g. 1" oninput="generatePartnerRFQ()" />' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Length (in)</label>' +
+          '<input type="number" class="rfq-prod-length" min="0" step="0.1" placeholder="e.g. 15.5" value="' + (prev.length||'') + '" oninput="generatePartnerRFQ()" />' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Width (in)</label>' +
+          '<input type="number" class="rfq-prod-width" min="0" step="0.1" placeholder="e.g. 10.2" value="' + (prev.width||'') + '" oninput="generatePartnerRFQ()" />' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Height (in)</label>' +
+          '<input type="number" class="rfq-prod-height" min="0" step="0.1" placeholder="e.g. 3.0" value="' + (prev.height||'') + '" oninput="generatePartnerRFQ()" />' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Weight</label>' +
+          '<div style="display:flex;gap:8px;align-items:center;">' +
+            '<input type="number" class="rfq-prod-weight" min="0" step="0.1" placeholder="e.g. 4.5" value="' + (prev.weight||'') + '" oninput="generatePartnerRFQ()" style="flex:1" />' +
+            '<select class="rfq-prod-wunit" onchange="generatePartnerRFQ()" style="width:80px;flex-shrink:0;">' +
+              '<option value="lbs"' + lbsSel + '>lbs</option>' +
+              '<option value="kg"' + kgSel + '>kg</option>' +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Declared Value (USD)</label>' +
+          '<div class="input-wrap">' +
+            '<span class="currency-prefix">$</span>' +
+            '<input type="number" class="rfq-prod-value" min="0" step="0.01" placeholder="e.g. 2000" value="' + (prev.value||'') + '" oninput="generatePartnerRFQ()" />' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    container.appendChild(block);
+  }
+
+  generatePartnerRFQ();
+}
+
+function generatePartnerRFQ() {
+  var partnerKey    = (document.getElementById('rfq-partner').value || '').trim();
+  var originCountry = (document.getElementById('rfq-origin-country').value || '').trim();
+  var originAddress = (document.getElementById('rfq-origin-address').value || '').trim();
+  var destCountry   = (document.getElementById('rfq-dest-country').value || '').trim();
+  var destAddress   = (document.getElementById('rfq-dest-address').value || '').trim();
+
+  var emptyState   = document.getElementById('rfq-empty-state');
+  var emailPreview = document.getElementById('rfq-email-preview');
 
   if (!partnerKey) {
-    emptyState.style.display  = 'block';
+    emptyState.style.display   = 'block';
     emailPreview.style.display = 'none';
     return;
   }
 
-  const partner = PARTNERS[partnerKey];
+  var partner = PARTNERS[partnerKey];
   emptyState.style.display   = 'none';
   emailPreview.style.display = 'block';
 
-  // Build subject
-  const today      = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const originPart = originCountry || '[Origin]';
-  const destPart   = destCountry   || '[Destination]';
-  const prodPart   = product       || 'Shipment';
-  const subject    = `Quote Request – ${originPart} > ${destPart} – ${today}`;
+  // Collect products from dynamic blocks
+  var productBlocks = document.querySelectorAll('.rfq-product-block');
+  var products = Array.prototype.map.call(productBlocks, function(b, idx) {
+    var length  = b.querySelector('.rfq-prod-length').value.trim();
+    var width   = b.querySelector('.rfq-prod-width').value.trim();
+    var height  = b.querySelector('.rfq-prod-height').value.trim();
+    var weight  = b.querySelector('.rfq-prod-weight').value.trim();
+    var wunit   = b.querySelector('.rfq-prod-wunit').value;
+    var value   = b.querySelector('.rfq-prod-value').value.trim();
+    var qty     = parseInt(b.querySelector('.rfq-prod-qty').value) || 1;
+    var product = b.querySelector('.rfq-prod-type').value.trim() || ('Product ' + (idx + 1));
+    return {
+      product:    product,
+      qty:        qty,
+      dimLine:    (length && width && height)
+                    ? (length + '" (L) × ' + width + '" (W) × ' + height + '" (H)')
+                    : '[To be confirmed]',
+      weightLine: weight ? (weight + ' ' + wunit) : '[To be confirmed]',
+      valueLine:  value
+                    ? ('$' + parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD')
+                    : '[To be confirmed]'
+    };
+  });
 
-  // Build body
-  const dimLine = (length && width && height)
-    ? `${length}" (L) × ${width}" (W) × ${height}" (H)`
-    : '[To be confirmed]';
-  const weightLine = weight
-    ? `${weight} ${weightUnit}`
-    : '[To be confirmed]';
-  const valueLine = value
-    ? `$${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-    : '[To be confirmed]';
+  var today      = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  var originPart = originCountry || '[Origin]';
+  var destPart   = destCountry   || '[Destination]';
+  var subject    = 'Quote Request – ' + originPart + ' > ' + destPart + ' – ' + today;
 
-  const body =
-`${partner.greeting}
+  // Build product lines for email body
+  var multiProduct = products.length > 1;
+  var productSection = '';
+  products.forEach(function(p, i) {
+    if (multiProduct) {
+      productSection += '\nProduct ' + (i + 1) + ': ' + p.product + '\n';
+    }
+    productSection +=
+      'Product Type:         ' + p.product + '\n' +
+      'Quantity:             ' + p.qty + ' unit' + (p.qty !== 1 ? 's' : '') + '\n' +
+      'Dimensions (per unit):' + p.dimLine + '\n' +
+      'Weight (per unit):    ' + p.weightLine + '\n' +
+      'Declared Value:       ' + p.valueLine;
+    if (i < products.length - 1) productSection += '\n';
+  });
 
-I hope you're doing well. We would like to request a quote for the following export shipment and kindly ask that you provide pricing and lead time at your earliest convenience.
+  var divider = '──────────────────────────────';
+  var prodHeader = multiProduct ? ('PRODUCTS (' + products.length + ')') : 'PRODUCT DETAILS';
 
-──────────────────────────────
-SHIPMENT DETAILS
-──────────────────────────────
-Origin Country:       ${originCountry || '[To be confirmed]'}
-Origin Address:       ${originAddress || '[To be confirmed]'}
-
-Destination Country:  ${destCountry || '[To be confirmed]'}
-Destination Address:  ${destAddress || '[To be confirmed]'}
-
-Product Type:         ${product || '[To be confirmed]'}
-Quantity:             ${qty} unit${qty !== 1 ? 's' : ''}
-Dimensions (per unit):${dimLine}
-Weight (per unit):    ${weightLine}
-Declared Value:       ${valueLine}
-──────────────────────────────
-
-Could you please advise on the following:
-  1. Total shipping cost (freight + brokerage)
-  2. IOR (Importer of Record) fees, if applicable
-  3. Estimated duties and taxes
-  4. Estimated transit time
-  5. Any additional import requirements for ${destCountry || 'the destination country'}
-
-Please let us know if you need any further information to prepare the quote.
-
-Thank you,
-Adil Khan
-Export Services – Firstbase
-exports@firstbase.io`;
+  var body =
+    partner.greeting + '\n\n' +
+    'I hope you\'re doing well. We would like to request a quote for the following export shipment and kindly ask that you provide pricing and lead time at your earliest convenience.\n\n' +
+    divider + '\n' +
+    'SHIPMENT DETAILS\n' +
+    divider + '\n' +
+    'Origin Country:       ' + (originCountry || '[To be confirmed]') + '\n' +
+    'Origin Address:       ' + (originAddress || '[To be confirmed]') + '\n\n' +
+    'Destination Country:  ' + (destCountry || '[To be confirmed]') + '\n' +
+    'Destination Address:  ' + (destAddress || '[To be confirmed]') + '\n' +
+    divider + '\n' +
+    prodHeader + '\n' +
+    divider + '\n' +
+    productSection + '\n' +
+    divider + '\n\n' +
+    'Could you please advise on the following:\n' +
+    '  1. Total shipping cost (freight + brokerage)\n' +
+    '  2. IOR (Importer of Record) fees, if applicable\n' +
+    '  3. Estimated duties and taxes\n' +
+    '  4. Estimated transit time\n' +
+    '  5. Any additional import requirements for ' + (destCountry || 'the destination country') + '\n\n' +
+    'Please let us know if you need any further information to prepare the quote.\n\n' +
+    'Thank you,\n' +
+    'Adil Khan\n' +
+    'Export Services – Firstbase\n' +
+    'exports@firstbase.io';
 
   document.getElementById('rfq-email-to').textContent      = partner.to;
   document.getElementById('rfq-email-subject').textContent  = subject;
