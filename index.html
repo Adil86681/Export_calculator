@@ -4211,6 +4211,17 @@ function updateRfqProductBlocks() {
   generatePartnerRFQ();
 }
 
+function onRfqOriginChange() {
+  var country = document.getElementById('rfq-origin-country').value;
+  var addrEl  = document.getElementById('rfq-origin-address');
+  if (country === 'United States') {
+    addrEl.value = '3815 West Parkway Blvd, West Valley City, Utah, 84120';
+  } else {
+    addrEl.value = '';
+  }
+  generatePartnerRFQ();
+}
+
 function generatePartnerRFQ() {
   var partnerKey    = (document.getElementById('rfq-partner').value || '').trim();
   var originCountry = (document.getElementById('rfq-origin-country').value || '').trim();
