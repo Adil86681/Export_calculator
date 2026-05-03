@@ -1303,6 +1303,231 @@
   #clerk-user-bar.visible { display: flex; }
   #clerk-user-mount { line-height: 0; }
   /* ──────────────────────────────────────────────────────────────── */
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* REPOSITORY v2 — INVOICE-STYLE RENDERING                     */
+  /* ══════════════════════════════════════════════════════════ */
+
+  .repo2-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .repo2-controls input, .repo2-controls select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 9px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .repo2-controls input { flex: 1; min-width: 200px; }
+  .repo2-controls input:focus, .repo2-controls select:focus { border-color: var(--accent); }
+  .repo2-stats {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Month banner — black bold bar, mimics the sheet's "August Shipments" row */
+  .month-banner-v2 {
+    background: #0f172a;
+    color: #ffffff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 8px 8px 0 0;
+    margin-top: 28px;
+    margin-bottom: 0;
+  }
+  .month-section-v2 { margin-bottom: 32px; }
+
+  /* Shipment block — collapsible card with invoice-styled body */
+  .shipment-v2-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    margin-bottom: 0;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .shipment-v2-block:first-of-type { border-top: 1px solid var(--border); }
+  .shipment-v2-block:last-of-type { border-radius: 0 0 8px 8px; margin-bottom: 0; }
+  .shipment-v2-block:hover { border-color: rgba(37,99,235,0.3); }
+
+  /* Compact header (closed state) */
+  .shipment-v2-header {
+    background: #f8fafc;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .shipment-v2-header:hover { background: #f1f5f9; }
+  .sh2-left { display: flex; align-items: center; gap: 12px; }
+  .sh2-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .sh2-client {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .sh2-order {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+  .sh2-right { display: flex; align-items: center; gap: 10px; }
+  .sh2-quote {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #047857;
+    background: #d1fae5;
+    border: 1px solid #6ee7b7;
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+  .sh2-ior {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .sh2-action-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+    line-height: 1.6;
+  }
+  .sh2-pdf-btn { color: var(--accent); border-color: rgba(37,99,235,0.3); }
+  .sh2-pdf-btn:hover { background: rgba(37,99,235,0.08); border-color: var(--accent); }
+  .sh2-edit-btn { color: var(--accent2); border-color: rgba(124,58,237,0.3); }
+  .sh2-edit-btn:hover { background: rgba(124,58,237,0.08); border-color: var(--accent2); }
+  .sh2-delete-btn { color: var(--muted); }
+  .sh2-delete-btn:hover { color: var(--warn); border-color: rgba(234,88,12,0.4); background: rgba(234,88,12,0.08); }
+  .sh2-chevron {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  .shipment-v2-block.open .sh2-chevron { transform: rotate(180deg); }
+
+  /* Expanded body — full invoice style */
+  .shipment-v2-body { display: none; }
+  .shipment-v2-block.open .shipment-v2-body { display: block; }
+
+  /* Invoice block: matches the Google Sheet design */
+  .inv-wrap {
+    margin: 0;
+    border-top: 1px solid var(--border);
+    background: #ffffff;
+    font-family: 'DM Mono', monospace;
+  }
+  .inv-banner {
+    background: #0f172a;
+    color: #ffffff;
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    padding: 8px 16px;
+  }
+
+  /* Header row + value row pattern. 7 columns matching the sheet. */
+  .inv-meta-head, .inv-meta-row,
+  .inv-cost-head, .inv-cost-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .inv-meta-head > div, .inv-cost-head > div {
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text);
+    border-right: 1px solid var(--border);
+  }
+  .inv-meta-head > div:last-child, .inv-cost-head > div:last-child { border-right: none; }
+  .inv-meta-row > div, .inv-cost-row > div {
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text);
+    border-right: 1px solid var(--border);
+  }
+  .inv-meta-row > div:last-child, .inv-cost-row > div:last-child { border-right: none; }
+
+  /* Yellow band — meta info (matches sheet's yellow tint) */
+  .inv-meta-row { background: #fef9c3; }
+  /* Blue band — cost section header (matches sheet's blue tint) */
+  .inv-cost-head { background: #dbeafe; }
+  /* Yellow band — cost values */
+  .inv-cost-row { background: #fef9c3; }
+  /* Green highlight on Quote cell */
+  .inv-cost-row .inv-quote-cell { background: #86efac; font-weight: 700; }
+
+  /* Items table — also full-width grid */
+  .inv-items-head, .inv-items-row, .inv-items-total {
+    display: grid;
+    grid-template-columns: 1.5fr 4fr 1fr 1fr 1.5fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .inv-items-head { background: #fef9c3; }
+  .inv-items-row  { background: #fefce8; }
+  .inv-items-total { background: #f8fafc; font-weight: 700; }
+  .inv-items-head > div, .inv-items-row > div, .inv-items-total > div {
+    padding: 8px 12px;
+    font-size: 11px;
+    border-right: 1px solid var(--border);
+  }
+  .inv-items-head > div:last-child, .inv-items-row > div:last-child, .inv-items-total > div:last-child { border-right: none; }
+  .inv-items-head > div {
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .inv-items-row .inv-country {
+    display: inline-block;
+    background: rgba(124,58,237,0.12);
+    color: #6d28d9;
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-size: 10px;
+  }
 </style>
 </head>
 <body>
@@ -1339,6 +1564,7 @@
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('calculator')">📦 Rate Calculator</button>
     <button class="tab-btn" onclick="switchTab('repository')">📋 Shipment Repository</button>
+    <button class="tab-btn" onclick="switchTab('repository-v2')">🧾 Repository v2</button>
     <button class="tab-btn" onclick="switchTab('products')">🗂 Product Info</button>
     <button class="tab-btn" onclick="switchTab('quote')">📝 Create Quote</button>
   </div>
@@ -1445,6 +1671,28 @@
     <div id="repo-content"></div>
 
   </div><!-- end tab-repository -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- TAB 2b: SHIPMENT REPOSITORY v2 (invoice style)              -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div id="tab-repository-v2" class="tab-panel">
+
+    <div class="repo2-controls">
+      <input type="text" id="repo2-search" placeholder="Search client, order ID, item, country…" oninput="renderRepoV2()" />
+      <select id="repo2-filter-client" onchange="renderRepoV2()">
+        <option value="">All Clients</option>
+      </select>
+      <select id="repo2-filter-ior" onchange="renderRepoV2()">
+        <option value="">All IOR Partners</option>
+      </select>
+      <span class="repo2-stats" id="repo2-stats"></span>
+      <button class="add-shipment-btn" onclick="openAddShipment()">+ Add New Shipment</button>
+      <button class="open-sheet-btn" onclick="openSourceSheet()" title="Open the source Google Sheet in a new tab">📊 Open Source Sheet</button>
+    </div>
+
+    <div id="repo2-content"></div>
+
+  </div><!-- end tab-repository-v2 -->
 
   <!-- ══════════════════════════════════════════════════════════ -->
   <!-- TAB 3: PRODUCT INFO                                         -->
@@ -2071,11 +2319,12 @@
 <script>
 // ── TAB SWITCHER ────────────────────────────────────────────────
 function switchTab(name) {
-  const tabs = ['calculator','repository','products','quote'];
+  const tabs = ['calculator','repository','repository-v2','products','quote'];
   document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', tabs[i] === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'repository') initRepo();
+  if (name === 'repository-v2') initRepoV2();
   if (name === 'products') renderProductTable();
   if (name === 'quote') onQuoteWarehouseChange();
 }
@@ -2458,6 +2707,191 @@ function renderBlock(s) {
     </div>
   </div>`;
 }
+
+// ══════════════════════════════════════════════════════════
+// REPOSITORY v2 — INVOICE-STYLE RENDERER
+// Reads from the same shipments[] array; same backend writes.
+// ══════════════════════════════════════════════════════════
+let repo2Inited = false;
+
+function initRepoV2() {
+  // Reuse v1's loaded data if available; otherwise trigger a load
+  if (repoLoaded) {
+    populateRepo2Filters();
+    renderRepoV2();
+    return;
+  }
+  document.getElementById('repo2-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:13px;">Loading shipments…</div>';
+  loadShipments().then(() => {
+    repoLoaded = true;
+    populateRepo2Filters();
+    renderRepoV2();
+  });
+}
+
+function populateRepo2Filters() {
+  const clients = [...new Set(shipments.map(s => s.client))].sort();
+  const iors = [...new Set(shipments.map(s => s.ior).filter(Boolean))].sort();
+  const cs = document.getElementById('repo2-filter-client');
+  cs.innerHTML = '<option value="">All Clients</option>';
+  clients.forEach(c => { const o=document.createElement('option'); o.value=o.textContent=c; cs.appendChild(o); });
+  const is = document.getElementById('repo2-filter-ior');
+  is.innerHTML = '<option value="">All IOR Partners</option>';
+  iors.forEach(i => { const o=document.createElement('option'); o.value=o.textContent=i; is.appendChild(o); });
+}
+
+function escapeHtmlV2(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderRepoV2() {
+  const search = document.getElementById('repo2-search').value.toLowerCase();
+  const clientF = document.getElementById('repo2-filter-client').value;
+  const iorF = document.getElementById('repo2-filter-ior').value;
+
+  let filtered = shipments.filter(s => {
+    if (clientF && s.client !== clientF) return false;
+    if (iorF && s.ior !== iorF) return false;
+    if (search) {
+      const hay = [s.client, s.orderId, s.ior, s.invoice, ...s.items.map(i=>i.item+i.country)].join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => (b.num || 0) - (a.num || 0));
+
+  document.getElementById('repo2-stats').textContent = filtered.length + ' of ' + shipments.length + ' shipments';
+
+  const byMonth = {};
+  filtered.forEach(s => { if (!byMonth[s.month]) byMonth[s.month] = []; byMonth[s.month].push(s); });
+
+  const html = Object.entries(byMonth).map(([month, list]) => `
+    <div class="month-section-v2">
+      <div class="month-banner-v2">${escapeHtmlV2(month) || 'Unscheduled'} Shipments</div>
+      ${list.map(s => renderBlockV2(s)).join('')}
+    </div>
+  `).join('');
+
+  document.getElementById('repo2-content').innerHTML = html || '<div class="empty-state" style="padding:48px;text-align:center;color:var(--muted)">No shipments match your filters.</div>';
+}
+
+function renderBlockV2(s) {
+  const id = 'ship2-' + s.num;
+  const e = escapeHtmlV2;
+
+  const itemsFiltered = s.items.filter(i => i.item || i.country);
+  const itemRowsHtml = itemsFiltered.map(i => `
+    <div class="inv-items-row">
+      <div><span class="inv-country">${e(i.country)}</span></div>
+      <div>${e(i.item)}</div>
+      <div style="text-align:center">${i.count || ''}</div>
+      <div style="text-align:center">${i.weight || ''}</div>
+      <div style="text-align:right">${e(i.value)}</div>
+    </div>
+  `).join('');
+
+  const totalCount = itemsFiltered.reduce((a,i)=>a+(parseInt(i.count)||0),0);
+  const totalWeight = itemsFiltered.reduce((a,i)=>a+(parseInt(i.weight)||0),0);
+
+  return `
+  <div class="shipment-v2-block" id="${id}">
+    <div class="shipment-v2-header" onclick="toggleBlockV2('${id}')">
+      <div class="sh2-left">
+        <span class="sh2-num">#${s.num}</span>
+        <span class="sh2-client">${e(s.client)}</span>
+        ${s.orderId ? `<span class="sh2-order">${e(s.orderId)}</span>` : ''}
+      </div>
+      <div class="sh2-right">
+        <span class="sh2-quote">${e(s.quote)}</span>
+        ${s.ior ? `<span class="sh2-ior">${e(s.ior)}</span>` : ''}
+        <button class="sh2-action-btn sh2-pdf-btn" onclick="event.stopPropagation();exportPDF(${s.num})" title="Export PDF">PDF</button>
+        <button class="sh2-action-btn sh2-edit-btn" onclick="event.stopPropagation();openEditShipment(${s.num})" title="Edit shipment">✏ Edit</button>
+        <button class="sh2-action-btn sh2-delete-btn" onclick="event.stopPropagation();deleteShipmentV2(${s.num})" title="Delete shipment">🗑</button>
+        <span class="sh2-chevron">▼</span>
+      </div>
+    </div>
+    <div class="shipment-v2-body">
+      <div class="inv-wrap">
+        <div class="inv-banner">Shipment #${s.num}</div>
+        <div class="inv-meta-head">
+          <div>Client Name</div>
+          <div>Firstbase Order ID</div>
+          <div>Planned Ship Date</div>
+          <div>Confirmed Ship Date</div>
+          <div>Delivery Date</div>
+          <div>IOR Name</div>
+          <div>IOR Invoice#</div>
+        </div>
+        <div class="inv-meta-row">
+          <div><em>${e(s.client)}</em></div>
+          <div>${e(s.orderId)}</div>
+          <div>${e(s.planned)}</div>
+          <div>${e(s.confirmed)}</div>
+          <div>${e(s.delivery)}</div>
+          <div>${e(s.ior)}</div>
+          <div>${e(s.invoice)}</div>
+        </div>
+        <div class="inv-cost-head">
+          <div>Local Tax and Duties</div>
+          <div>IOR and Brokerage Fees</div>
+          <div>Fixed Cost per Shipment</div>
+          <div>Variable Cost per Shipment</div>
+          <div>Firstbase Service &amp; Handling</div>
+          <div>Quote to Customer</div>
+          <div>Final Cost</div>
+        </div>
+        <div class="inv-cost-row">
+          <div>${e(s.taxes)}</div>
+          <div>${e(s.brokerage)}</div>
+          <div>${e(s.fixed)}</div>
+          <div>${e(s.variable)}</div>
+          <div>${e(s.handling)}</div>
+          <div class="inv-quote-cell">${e(s.quote)}</div>
+          <div>${e(s.fbCost)}</div>
+        </div>
+        ${itemsFiltered.length > 0 ? `
+        <div class="inv-items-head">
+          <div>Country</div>
+          <div>Item</div>
+          <div style="text-align:center">Count</div>
+          <div style="text-align:center">Weight</div>
+          <div style="text-align:right">Value</div>
+        </div>
+        ${itemRowsHtml}
+        <div class="inv-items-total">
+          <div>Total</div>
+          <div></div>
+          <div style="text-align:center">${totalCount}</div>
+          <div style="text-align:center">${totalWeight || ''}</div>
+          <div style="text-align:right">${e(s.quote)}</div>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleBlockV2(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function deleteShipmentV2(num) {
+  if (!confirm('Delete Shipment #' + num + '? This cannot be undone.')) return;
+  const idx = shipments.findIndex(s => s.num === num);
+  if (idx !== -1) {
+    shipments.splice(idx, 1);
+    populateRepo2Filters();
+    renderRepoV2();
+    // Also re-render v1 if it's been initialized
+    if (typeof repoInited !== 'undefined' && repoInited) {
+      repoInited = false;
+      initRepo();
+    }
+  }
+}
+
 
 function deleteShipment(num) {
   if (!confirm('Delete Shipment #' + num + '? This cannot be undone.')) return;
@@ -3304,6 +3738,7 @@ async function submitShipment() {
     repoInited = false;
     repoLoaded = true; // keep true so initRepo() skips the fetch
     initRepo();
+    if (document.getElementById('tab-repository-v2')) { populateRepo2Filters(); renderRepoV2(); }
     closeAddShipment();
     setTimeout(() => {
       const el = document.getElementById('ship-' + shipNum);
@@ -3322,6 +3757,7 @@ async function submitShipment() {
       repoLoaded = false;
       repoInited = false;
       initRepo();
+      if (document.getElementById('tab-repository-v2')) { populateRepo2Filters(); renderRepoV2(); }
       closeAddShipment();
       setTimeout(() => {
         const el = document.getElementById('ship-' + shipNum);
